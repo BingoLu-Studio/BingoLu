@@ -1,77 +1,87 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 
 <head>
 
     <meta charset="UTF-8">
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Animais Encontrados - BingoLú</title>
 
     <link rel="stylesheet"
-    href="{{ url_for('static', filename='style.css') }}">
+          href="{{ url_for('static', filename='style.css') }}">
 
 </head>
 
-<body>
+<body class="pagina-interna pagina-encontrados">
 
-<div class="navbar">
+<nav class="navbar">
 
-    <h1>BingoLú Pets</h1>
+    <div class="navbar-conteudo">
 
-    <div class="menu">
+        <h1>BingoLú Pets</h1>
 
-        <a href="/feed">
-            Feed
-        </a>
+        <div class="menu">
 
-        <a href="/meus_posts">
-            Meus Pets
-        </a>
+            <a href="/feed">
+                Feed
+            </a>
 
-        <a href="/meus_avistamentos">
-            Avistamentos
-        </a>
+            <a href="/meus_posts">
+                Meus Pets
+            </a>
 
-        <a href="/post_pet">
-            Nova Postagem
-        </a>
+            <a href="/meus_avistamentos">
+                Avistamentos
+            </a>
 
-        <a href="/logout">
-            Sair
-        </a>
+            <a href="/encontrados" class="ativo">
+                Encontrados
+            </a>
+
+            <a href="/post_pet">
+                Nova Postagem
+            </a>
+
+            <a href="/logout">
+                Sair
+            </a>
+
+        </div>
 
     </div>
 
-</div>
-
-
+</nav>
 
 <h2 class="titulo-pagina">
-
     Histórico de Pets Encontrados
-
 </h2>
 
-<p class="mensagem-vazia">
+<p class="subtitulo">
     Assim que um anúncio for marcado como encontrado,
     ele aparecerá aqui.
 </p>
 
 <div class="submenu-meus-pets">
 
-    <a
-    href="/meus_posts">
+    <a href="/meus_posts">
 
-        Meus Anúncios
+        <strong>Meus Anúncios</strong>
+
+        <span>
+            Gerencie seus anúncios
+        </span>
 
     </a>
 
-    <a
-    href="/encontrados"
-    class="submenu-ativo">
+    <a href="/encontrados" class="submenu-ativo">
 
-        Histórico de Encontrados
+        <strong>Histórico de Encontrados</strong>
+
+        <span>
+            Animais encontrados
+        </span>
 
     </a>
 
@@ -81,85 +91,69 @@
 
 {% if pets %}
 
-{% for pet in pets %}
+    {% for pet in pets %}
 
-<div class="card-pet">
+    <div class="card-pet">
 
-    <img
-    src="{{ url_for('static',
-    filename='uploads/' + pet[5]) }}">
+        <img
+            src="{{ url_for('static',
+            filename='uploads/' + pet[5]) }}"
+            alt="Foto de {{ pet[1] }}"
+        >
 
-    <h2>
+        <h2>
+            {{ pet[1] }}
+        </h2>
 
-        {{ pet[1] }}
-
-    </h2>
-
-    <p class="status encontrado">
-
-        ✔ Animal encontrado
-
-    </p>
-
-    <div class="info-pet">
-
-        <p>
-
-            <strong>Descrição:</strong>
-
-            {{ pet[2] }}
-
+        <p class="status encontrado">
+            ✔ Animal encontrado
         </p>
 
-        <p>
+        <div class="info-pet">
 
-            <strong>Cidade:</strong>
+            <p>
+                <strong>Descrição:</strong>
+                {{ pet[2] }}
+            </p>
 
-            {{ pet[3] }}
+            <p>
+                <strong>Cidade:</strong>
+                {{ pet[3] }}
+            </p>
 
-        </p>
+            <p>
+                <strong>Contato:</strong>
+                {{ pet[4] }}
+            </p>
 
-        <p>
+            <p class="data-postagem">
+                Publicado em {{ pet[6] }}
+            </p>
 
-            <strong>Contato:</strong>
-
-            {{ pet[4] }}
-
-        </p>
-
-        <p class="data-postagem">
-
-            Publicado em {{ pet[6] }}
-
-        </p>
+        </div>
 
     </div>
 
-</div>
-
-{% endfor %}
+    {% endfor %}
 
 {% else %}
 
-<div class="card-pet">
+    <div class="card-pet aviso-card">
 
-    <h2>
+        <h2>
+            Nenhum animal encontrado
+        </h2>
 
-        Nenhum animal encontrado
+        <p class="mensagem-vazia">
+            Assim que algum anúncio for encerrado,
+            ele aparecerá neste histórico.
+        </p>
 
-    </h2>
-
-    <p class="mensagem-vazia">
-        Assim que algum anúncio for encerrado,
-        ele aparecerá neste histórico.
-    </p>
-</div>
+    </div>
 
 {% endif %}
 
 </div>
 
 </body>
-
 </html>
-

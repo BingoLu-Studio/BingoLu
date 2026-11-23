@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: bingolu
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    plan: free
+    disk:
+      name: bingolu-data
+      mountPath: /opt/render/project/src/database
+      sizeGB: 1

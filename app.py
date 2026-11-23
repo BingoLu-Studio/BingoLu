@@ -2,104 +2,571 @@ from datetime import datetime
 import sqlite3
 import os
 import re
+import math
+import requests
+import uuid
 
-from flask import Flask, render_template, request, redirect, session
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    session,
+    jsonify
+)
+
 from werkzeug.utils import secure_filename
+
+
+# =========================================================
+# CONFIGURAÇÃO DO FLASK
+# =========================================================
 
 app = Flask(__name__)
 
-app.secret_key = "segredo_super_secreto"
-app.config["UPLOAD_FOLDER"] = "static/uploads"
+app.secret_key = os.environ.get("SECRET_KEY", os.urandom(32).hex())
 
-EXTENSOES_PERMITIDAS = {"png", "jpg", "jpeg"}
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+# Render persistent disk is mounted at static/uploads; keep both DB and photos there.
+PERSISTENT_DIR = os.path.join(ROOT_DIR, "static", "uploads")
+os.makedirs(PERSISTENT_DIR, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = PERSISTENT_DIR
+
+EXTENSOES_PERMITIDAS = {
+    "png",
+    "jpg",
+    "jpeg"
+}
+
+CAMINHO_BANCO = os.path.join(PERSISTENT_DIR, "bingolu.db")
+
+
+# =========================================================
+# ARQUIVOS
+# =========================================================
 
 def arquivo_permitido(nome_arquivo):
 
-    return "." in nome_arquivo and \
-        nome_arquivo.rsplit(".", 1)[1].lower() in EXTENSOES_PERMITIDAS
+    return (
+        "." in nome_arquivo
+        and nome_arquivo.rsplit(".", 1)[1].lower()
+        in EXTENSOES_PERMITIDAS
+    )
+
+
+# =========================================================
+# BANCO DE DADOS
+# =========================================================
+
 def criar_banco():
-    conexao = sqlite3.connect("database/bingolu.db", timeout=10)
+
+    conexao = sqlite3.connect(
+        CAMINHO_BANCO,
+        timeout=10
+    )
+
     cursor = conexao.cursor()
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            senha TEXT NOT NULL,
+            telefone TEXT,
+            cidade TEXT,
+            latitude REAL,
+            longitude REAL
+        )
+    """)
 
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS usuarios (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nome TEXT NOT NULL,
-        email TEXT NOT NULL UNIQUE,
-        senha TEXT NOT NULL,
-        telefone TEXT,
-        cidade TEXT
-    )
+        CREATE TABLE IF NOT EXISTS pets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            descricao TEXT,
+            cidade TEXT,
+            contato TEXT,
+            usuario_id INTEGER,
+            imagem TEXT,
+            data_postagem TEXT,
+            status TEXT,
+            especie TEXT,
+            sexo TEXT,
+            porte TEXT,
+            latitude REAL,
+            longitude REAL,
+            cep_pet TEXT,
+            faixa_etaria TEXT,
+            nome_dono TEXT
+        )
     """)
+
     cursor.execute("""
-CREATE TABLE IF NOT EXISTS pets (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nome TEXT NOT NULL,
-    descricao TEXT,
-    cidade TEXT,
-    contato TEXT,
-    usuario_id INTEGER,
-    imagem TEXT,
-    data_postagem TEXT,
-    status TEXT
-)
-""")
+        CREATE TABLE IF NOT EXISTS avistamentos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            pet_id INTEGER,
+            local TEXT,
+            observacao TEXT,
+            data_avistamento TEXT,
+            nome_contato TEXT,
+            telefone_contato TEXT,
+            email_contato TEXT
+        )
+    """)
+
     cursor.execute("""
-CREATE TABLE IF NOT EXISTS avistamentos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    pet_id INTEGER,
-    local TEXT,
-    observacao TEXT,
-    data_avistamento TEXT,
-    nome_contato TEXT,
-    telefone_contato TEXT,
-    email_contato TEXT
-)
-""")
+        CREATE TABLE IF NOT EXISTS fotos_pets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            pet_id INTEGER NOT NULL,
+            imagem TEXT NOT NULL
+        )
+    """)
+
     conexao.commit()
     conexao.close()
 
-# cria o banco ao iniciar
+
 criar_banco()
+
+
+# =========================================================
+# GEOLOCALIZAÇÃO
+# =========================================================
+
+def limpar_cep(cep):
+
+    return re.sub(
+        r"\D",
+        "",
+        cep or ""
+    )
+
+
+def geocodificar_cep(cep):
+
+    """
+    Converte um CEP brasileiro em latitude, longitude,
+    cidade e UF.
+
+    Fluxo:
+    1. ViaCEP valida o CEP e fornece cidade/UF.
+    2. ArcGIS localiza o CEP e retorna as coordenadas.
+    3. Retorna latitude, longitude, cidade e UF.
+    """
+
+    cep_limpo = limpar_cep(cep)
+
+    if len(cep_limpo) != 8:
+
+        print(
+            f"[LOCALIZAÇÃO] CEP inválido: {cep}"
+        )
+
+        return (
+            None,
+            None,
+            None,
+            None
+        )
+
+    try:
+
+        # =================================================
+        # 1. VIA CEP
+        # =================================================
+
+        url_viacep = (
+            f"https://viacep.com.br/ws/"
+            f"{cep_limpo}/json/"
+        )
+
+        resposta_cep = requests.get(
+            url_viacep,
+            timeout=8
+        )
+
+        resposta_cep.raise_for_status()
+
+        dados_cep = resposta_cep.json()
+
+        if dados_cep.get("erro"):
+
+            print(
+                f"[LOCALIZAÇÃO] "
+                f"CEP não encontrado: {cep}"
+            )
+
+            return (
+                None,
+                None,
+                None,
+                None
+            )
+
+        cidade = (
+            dados_cep.get("localidade") or ""
+        ).strip()
+
+        uf = (
+            dados_cep.get("uf") or ""
+        ).strip()
+
+        if not cidade or not uf:
+
+            print(
+                "[LOCALIZAÇÃO] "
+                "ViaCEP não retornou cidade/UF "
+                f"para {cep_limpo}"
+            )
+
+            return (
+                None,
+                None,
+                None,
+                None
+            )
+
+        # =================================================
+        # 2. ARCGIS
+        # =================================================
+
+        parametros = {
+
+            "SingleLine": (
+                f"{cep_limpo}, "
+                f"{cidade}, "
+                f"{uf}, "
+                f"Brasil"
+            ),
+
+            "f": "json",
+
+            "maxLocations": 5
+        }
+
+        resposta_geo = requests.get(
+
+            "https://geocode.arcgis.com/"
+            "arcgis/rest/services/"
+            "World/GeocodeServer/"
+            "findAddressCandidates",
+
+            params=parametros,
+
+            timeout=10
+        )
+
+        resposta_geo.raise_for_status()
+
+        dados_geo = resposta_geo.json()
+
+        candidatos = dados_geo.get(
+            "candidates",
+            []
+        )
+
+        if not candidatos:
+
+            print(
+                "[LOCALIZAÇÃO] "
+                "Nenhuma coordenada encontrada "
+                f"para o CEP {cep_limpo}."
+            )
+
+            return (
+                None,
+                None,
+                None,
+                None
+            )
+
+        # =================================================
+        # 3. ESCOLHER CANDIDATO
+        # =================================================
+
+        for candidato in candidatos:
+
+            localizacao = candidato.get(
+                "location",
+                {}
+            )
+
+            latitude = localizacao.get("y")
+
+            longitude = localizacao.get("x")
+
+            if (
+                latitude is None
+                or longitude is None
+            ):
+                continue
+
+            try:
+
+                latitude = float(latitude)
+
+                longitude = float(longitude)
+
+            except (
+                TypeError,
+                ValueError
+            ):
+
+                continue
+
+            score = candidato.get(
+                "score",
+                0
+            )
+
+            if score < 80:
+                continue
+
+            print(
+                "[LOCALIZAÇÃO] "
+                f"CEP {cep_limpo} -> "
+                f"{latitude}, {longitude} "
+                f"(score: {score}) "
+                f"| cidade: {cidade}/{uf}"
+            )
+
+            return (
+                latitude,
+                longitude,
+                cidade,
+                uf
+            )
+
+        # =================================================
+        # 4. FALHA SEGURA
+        # =================================================
+
+        print(
+            "[LOCALIZAÇÃO] "
+            "Nenhuma coordenada confiável "
+            f"encontrada para o CEP {cep_limpo}."
+        )
+
+        return (
+            None,
+            None,
+            None,
+            None
+        )
+
+    except requests.RequestException as erro:
+
+        print(
+            "[LOCALIZAÇÃO] "
+            "Erro de comunicação com serviço externo: "
+            f"{erro}"
+        )
+
+        return (
+            None,
+            None,
+            None,
+            None
+        )
+
+    except (
+        ValueError,
+        KeyError,
+        TypeError
+    ) as erro:
+
+        print(
+            "[LOCALIZAÇÃO] "
+            "Resposta inválida da geolocalização: "
+            f"{erro}"
+        )
+
+        return (
+            None,
+            None,
+            None,
+            None
+        )
+
+    except Exception as erro:
+
+        print(
+            "[LOCALIZAÇÃO] "
+            "Erro inesperado: "
+            f"{erro}"
+        )
+
+        return (
+            None,
+            None,
+            None,
+            None
+        )
+
+
+# =========================================================
+# DISTÂNCIA GEOGRÁFICA
+# =========================================================
+
+def calcular_distancia(
+    lat1,
+    lon1,
+    lat2,
+    lon2
+):
+
+    """
+    Calcula a distância em quilômetros
+    entre duas coordenadas usando Haversine.
+    """
+
+    coordenadas = (
+        lat1,
+        lon1,
+        lat2,
+        lon2
+    )
+
+    if any(
+        valor is None
+        for valor in coordenadas
+    ):
+
+        return float("inf")
+
+    try:
+
+        lat1 = float(lat1)
+        lon1 = float(lon1)
+
+        lat2 = float(lat2)
+        lon2 = float(lon2)
+
+    except (
+        TypeError,
+        ValueError
+    ):
+
+        return float("inf")
+
+    if (
+        lat1 == 0.0
+        or lon1 == 0.0
+        or lat2 == 0.0
+        or lon2 == 0.0
+    ):
+
+        return float("inf")
+
+    raio_terra = 6371.0
+
+    lat1 = math.radians(lat1)
+    lon1 = math.radians(lon1)
+
+    lat2 = math.radians(lat2)
+    lon2 = math.radians(lon2)
+
+    dlat = lat2 - lat1
+
+    dlon = lon2 - lon1
+
+    a = (
+        math.sin(dlat / 2) ** 2
+        + math.cos(lat1)
+        * math.cos(lat2)
+        * math.sin(dlon / 2) ** 2
+    )
+
+    c = 2 * math.atan2(
+        math.sqrt(a),
+        math.sqrt(1 - a)
+    )
+
+    return raio_terra * c
+
+
+# =========================================================
+# PÁGINA INICIAL
+# =========================================================
 
 @app.route("/")
 def home():
-    return render_template("index.html")
 
-@app.route("/login", methods=["GET", "POST"])
+    return render_template(
+        "index.html"
+    )
+
+
+# =========================================================
+# LOGIN
+# =========================================================
+
+@app.route(
+    "/login",
+    methods=["GET", "POST"]
+)
 def login():
 
     if request.method == "POST":
 
-        email = request.form["email"]
-        senha = request.form["senha"]
+        email = request.form[
+            "email"
+        ].strip()
 
-        conexao = sqlite3.connect("database/bingolu.db", timeout=10)
+        senha = request.form[
+            "senha"
+        ]
+
+        conexao = sqlite3.connect(
+            CAMINHO_BANCO,
+            timeout=10
+        )
+
         cursor = conexao.cursor()
 
         cursor.execute("""
-        SELECT * FROM usuarios
-        WHERE email = ? AND senha = ?
-        """, (email, senha))
+            SELECT *
+            FROM usuarios
+            WHERE email = ?
+            AND senha = ?
+        """, (
+            email,
+            senha
+        ))
 
         usuario = cursor.fetchone()
 
         cursor.close()
+
         conexao.close()
 
         if usuario:
 
-            session["usuario_id"] = usuario[0]
-            session["usuario_nome"] = usuario[1]
+            session[
+                "usuario_id"
+            ] = usuario[0]
 
-            return redirect("/feed")
+            session[
+                "usuario_nome"
+            ] = usuario[1]
 
-        else:
-            return "Email ou senha incorretos"
+            return redirect(
+                "/feed"
+            )
 
-    return render_template("login.html")
+        return (
+            "Email ou senha incorretos"
+        )
 
+    return render_template(
+        "login.html"
+    )
+
+
+# =========================================================
+# LOGOUT
+# =========================================================
 
 @app.route("/logout")
 def logout():
@@ -107,291 +574,610 @@ def logout():
     session.clear()
 
     return redirect("/")
-    
-import re
-import requests
 
-@app.route("/cadastro", methods=["GET", "POST"])
+
+# =========================================================
+# CADASTRO
+# =========================================================
+
+@app.route(
+    "/cadastro",
+    methods=["GET", "POST"]
+)
 def cadastro():
 
     if request.method == "POST":
 
-        nome = request.form["nome"].strip()
-        email = request.form["email"].strip()
-        senha = request.form["senha"]
-        
-        # Recebe os dados formatados do HTML
-        telefone_formatado = request.form["telefone"].strip()
-        cep_formatado = request.form["cep"].strip()
+        nome = request.form[
+            "nome"
+        ].strip()
 
-        # Remove parênteses, traços e espaços para realizar as validações numéricas nativas do seu código
-        telefone_limpo = re.sub(r"\D", "", telefone_formatado)
-        cep_limpo = re.sub(r"\D", "", cep_formatado)
+        email = request.form[
+            "email"
+        ].strip()
 
-        # --- SUAS VALIDAÇÕES ADAPTADAS PARA O NOVO FORMATO ---
+        senha = request.form[
+            "senha"
+        ]
+
+        telefone_formatado = (
+            request.form[
+                "telefone"
+            ].strip()
+        )
+
+        cep_formatado = (
+            request.form[
+                "cep"
+            ].strip()
+        )
+
+        telefone_limpo = re.sub(
+            r"\D",
+            "",
+            telefone_formatado
+        )
+
+        cep_limpo = limpar_cep(
+            cep_formatado
+        )
+
+        # -------------------------------------------------
+        # VALIDAÇÕES
+        # -------------------------------------------------
+
         if len(nome) < 3:
-            return "Nome deve possuir pelo menos 3 caracteres."
 
-        if not re.match(r"^[^@]+@[^@]+\.[^@]+$", email):
+            return (
+                "Nome deve possuir "
+                "pelo menos 3 caracteres."
+            )
+
+        if not re.match(
+            r"^[^@]+@[^@]+\.[^@]+$",
+            email
+        ):
+
             return "E-mail inválido."
 
         if len(senha) < 6:
-            return "A senha deve possuir pelo menos 6 caracteres."
 
-        # Valida usando a string limpa (apenas números)
+            return (
+                "A senha deve possuir "
+                "pelo menos 6 caracteres."
+            )
+
         if not telefone_limpo.isdigit():
-            return "Telefone deve conter apenas números."
 
-        if len(telefone_limpo) < 10 or len(telefone_limpo) > 11:
-            return "Telefone deve possuir 10 ou 11 dígitos."
-            
+            return (
+                "Telefone deve conter "
+                "apenas números."
+            )
+
+        if len(
+            telefone_limpo
+        ) not in (10, 11):
+
+            return (
+                "Telefone deve possuir "
+                "10 ou 11 dígitos."
+            )
+
         if len(cep_limpo) != 8:
-            return "CEP inválido. Deve conter exatamente 8 números."
 
-        cidade = request.form["cidade"].strip()
+            return (
+                "CEP inválido. "
+                "Deve conter exatamente "
+                "8 números."
+            )
 
-        # --- LÓGICA DE GEOLOCALIZAÇÃO (Usa o CEP limpo para a API) ---
-        latitude = 0.0
-        longitude = 0.0
-        try:
-            response_cep = requests.get(f"https://viacep.com.br{cep_limpo}/json/", timeout=5).json()
-            if "erro" not in response_cep:
-                rua = response_cep.get("logradouro", "")
-                bairro = response_cep.get("bairro", "")
-                cidade_cep = response_cep.get("localidade", "")
-                
-                endereco_busca = f"{rua}, {bairro}, {cidade_cep}, Brazil"
-                headers = {'User-Agent': 'BingoLuPetFinderApp/1.0'}
-                response_geo = requests.get(
-                    f"https://openstreetmap.org{endereco_busca}", 
-                    headers=headers, 
-                    timeout=5
-                ).json()
-                
-                if response_geo:
-                    latitude = float(response_geo["lat"])
-                    longitude = float(response_geo["lon"])
-        except Exception as e:
-            print(f"Erro na geolocalização: {e}")
+        # -------------------------------------------------
+        # LOCALIZAÇÃO AUTOMÁTICA PELO CEP
+        # -------------------------------------------------
 
-        # --- SALVANDO NO BANCO ---
-        conexao = sqlite3.connect("database/bingolu.db", timeout=10)
+        (
+            latitude,
+            longitude,
+            cidade,
+            uf
+        ) = geocodificar_cep(
+            cep_limpo
+        )
+
+        if (
+            latitude is None
+            or longitude is None
+            or cidade is None
+            or uf is None
+        ):
+
+            return (
+                "Não foi possível localizar "
+                "este CEP. Verifique o CEP "
+                "informado e tente novamente."
+            )
+
+        # -------------------------------------------------
+        # SALVAMENTO
+        # -------------------------------------------------
+
+        conexao = sqlite3.connect(
+            CAMINHO_BANCO,
+            timeout=10
+        )
+
         cursor = conexao.cursor()
 
         try:
+
             cursor.execute("""
-            INSERT INTO usuarios (nome, email, senha, telefone, cidade, latitude, longitude)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO usuarios (
+                    nome,
+                    email,
+                    senha,
+                    telefone,
+                    cidade,
+                    latitude,
+                    longitude
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             """, (
                 nome,
                 email,
                 senha,
-                telefone_formatado, # Salvamos formatado (XX) XXXXX-XXXX para ficar bonito nos cards
+                telefone_formatado,
                 cidade,
                 latitude,
                 longitude
             ))
+
             conexao.commit()
+
         except sqlite3.IntegrityError:
+
             cursor.close()
+
             conexao.close()
-            return "Este e-mail já está cadastrado."
+
+            return (
+                "Este e-mail já está cadastrado."
+            )
 
         cursor.close()
+
         conexao.close()
+
         return redirect("/login")
 
-    return render_template("cadastro.html")
+    return render_template(
+        "cadastro.html"
+    )
 
 
-import math
-from datetime import datetime, timedelta
-
-def calcular_distancia(lat1, lon1, lat2, lon2):
-    """ Calcula a distância em KM entre duas coordenadas usando Haversine """
-    if lat1 is None or lon1 is None or lat2 is None or lon2 is None:
-        return float('inf')
-    if lat1 == 0.0 or lon1 == 0.0 or lat2 == 0.0 or lon2 == 0.0:
-        return float('inf')
-        
-    raio_terra = 6371.0
-    lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
-    a = math.sin(dlat / 2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2)**2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    return raio_terra * c
+# =========================================================
+# FEED
+# =========================================================
 
 @app.route("/feed")
 def feed():
+
     if "usuario_id" not in session:
+
         return redirect("/login")
 
-    cidade = request.args.get("cidade")
-    especie = request.args.get("especie")
-    
-    # Novo parâmetro na URL para saber se o usuário clicou na aba 'alertas'
-    aba = request.args.get("aba", "geral") 
+    especie = request.args.get(
+        "especie"
+    )
 
-    conexao = sqlite3.connect("database/bingolu.db", timeout=10)
+    aba = request.args.get(
+        "aba",
+        "geral"
+    )
+
+    if aba not in (
+        "geral",
+        "alertas"
+    ):
+
+        aba = "geral"
+
+    conexao = sqlite3.connect(
+        CAMINHO_BANCO,
+        timeout=10
+    )
+
     cursor = conexao.cursor()
 
-    # 1. Pega a localização do usuário logado
-    cursor.execute("SELECT latitude, longitude FROM usuarios WHERE id = ?", (session["usuario_id"],))
-    usuario_geo = cursor.fetchone()
-    user_lat = usuario_geo[0] if (usuario_geo and usuario_geo[0]) else 0.0
-    user_lng = usuario_geo[1] if (usuario_geo and usuario_geo[1]) else 0.0
+    # -----------------------------------------------------
+    # LOCALIZAÇÃO DO USUÁRIO
+    # -----------------------------------------------------
 
-    # 2. Busca todos os pets perdidos do banco
+    cursor.execute("""
+        SELECT latitude, longitude
+        FROM usuarios
+        WHERE id = ?
+    """, (
+        session["usuario_id"],
+    ))
+
+    usuario_geo = cursor.fetchone()
+
+    user_lat = (
+        usuario_geo[0]
+        if usuario_geo
+        else None
+    )
+
+    user_lng = (
+        usuario_geo[1]
+        if usuario_geo
+        else None
+    )
+
+    # -----------------------------------------------------
+    # BUSCA DOS PETS
+    # -----------------------------------------------------
+
     query = """
-    SELECT
-        id, nome, descricao, cidade, contato,
-        imagem, data_postagem, status, usuario_id,
-        especie, sexo, porte, latitude, longitude
-    FROM pets
-    WHERE status = 'Perdido'
+        SELECT
+            id,
+            nome,
+            descricao,
+            cidade,
+            contato,
+            imagem,
+            data_postagem,
+            status,
+            usuario_id,
+            especie,
+            sexo,
+            porte,
+            latitude,
+            longitude,
+            faixa_etaria,
+            nome_dono
+        FROM pets
+        WHERE status = 'Perdido'
     """
+
     parametros = []
 
-    # Se estiver na aba GERAL, aplica os filtros visuais de Cidade e Espécie escolhidos
-    if aba == "geral":
-        if cidade:
-            query += " AND cidade LIKE ?"
-            parametros.append(f"%{cidade}%")
-        if especie:
-            query += " AND especie = ?"
-            parametros.append(especie)
+    # -----------------------------------------------------
+    # FILTRO DE ESPÉCIE
+    # -----------------------------------------------------
 
-    query += " ORDER BY id DESC"
-    cursor.execute(query, tuple(parametros))
-    todos_os_pets = cursor.fetchall()
+    if especie == "Outro":
+
+        query += """
+            AND (
+                especie NOT IN (
+                    'Canino',
+                    'Felino',
+                    'Ave'
+                )
+                OR especie IS NULL
+                OR TRIM(especie) = ''
+            )
+        """
+
+    elif especie in (
+        "Canino",
+        "Felino",
+        "Ave"
+    ):
+
+        query += """
+            AND especie = ?
+        """
+
+        parametros.append(
+            especie
+        )
+
+    query += """
+        ORDER BY id DESC
+    """
+
+    cursor.execute(
+        query,
+        tuple(parametros)
+    )
+
+    todos_os_pets = (
+        cursor.fetchall()
+    )
+
     cursor.close()
+
     conexao.close()
 
+    # -----------------------------------------------------
+    # FILTRAGEM POR DISTÂNCIA
+    # -----------------------------------------------------
+
     pets_filtrados = []
-    
-    # 3. Processamento Geográfico dos Filtros
+
     for pet in todos_os_pets:
+
         pet_lat = pet[12]
+
         pet_lng = pet[13]
-        distancia = calcular_distancia(user_lat, user_lng, pet_lat, pet_lng)
-        
-        pet_lista = list(pet)
-        pet_lista.append(round(distancia, 1) if distancia != float('inf') else None) # pet[14] = Distância
+
+        distancia = calcular_distancia(
+            user_lat,
+            user_lng,
+            pet_lat,
+            pet_lng
+        )
+
+        if distancia == float("inf"):
+
+            continue
+
+        # -------------------------------------------------
+        # ALERTAS
+        # 0 até 2 km
+        # -------------------------------------------------
 
         if aba == "alertas":
-            # REGRA DE ALERTAS DE AVISTAMENTO: 
-            # Raio super curto (2 km) para QUALQUER espécie, focado na vizinhança imediata
-            if distancia <= 2.0:
-                pets_filtrados.append(pet_lista)
-        else:
-            # REGRA DO FEED REGIONAL PADRÃO: 
-            # Raio de 5 km (Mostra também os que não têm coordenada para testes antigos não sumirem)
-            if distancia <= 5.0 or pet_lat == 0.0 or pet_lat is None or user_lat == 0.0:
-                pets_filtrados.append(pet_lista)
 
-    # 4. Ordenação por Proximidade
-    pets_filtrados.sort(key=lambda x: x[14] if x[14] is not None else 9999)
+            if distancia > 2.0:
+
+                continue
+
+        # -------------------------------------------------
+        # FEED REGIONAL
+        # Acima de 2 km e até 5 km
+        # -------------------------------------------------
+
+        else:
+
+            if distancia <= 2.0:
+
+                continue
+
+            if distancia > 5.0:
+
+                continue
+
+        pet_lista = list(
+            pet
+        )
+
+        pet_lista.append(
+            round(
+                distancia,
+                1
+            )
+        )
+
+        pets_filtrados.append(
+            pet_lista
+        )
+
+    # -----------------------------------------------------
+    # MAIS PRÓXIMOS PRIMEIRO
+    # -----------------------------------------------------
+
+    pets_filtrados.sort(
+        key=lambda pet: pet[16]
+    )
 
     return render_template(
         "feed.html",
         pets=pets_filtrados,
-        cidade=cidade,
         especie_ativa=especie,
         aba_ativa=aba
     )
 
-@app.route("/limpar_encontrados")
-def limpar_encontrados():
+
+# =========================================================
+# PETS ENCONTRADOS
+# =========================================================
+
+@app.route("/encontrados")
+def encontrados():
+
+    if "usuario_id" not in session:
+
+        return redirect("/login")
 
     conexao = sqlite3.connect(
-        "database/bingolu.db",
+        CAMINHO_BANCO,
         timeout=10
     )
 
     cursor = conexao.cursor()
 
     cursor.execute("""
-    DELETE FROM pets
-    WHERE status = 'Encontrado'
-    """)
-
-    conexao.commit()
-
-    cursor.close()
-    conexao.close()
-
-    return "Pets encontrados removidos com sucesso."
-
-@app.route("/teste_status")
-def teste_status():
-
-    conexao = sqlite3.connect(
-        "database/bingolu.db",
-        timeout=10
-    )
-
-    cursor = conexao.cursor()
-
-    cursor.execute("""
-    SELECT id, nome, status
-    FROM pets
+        SELECT
+            id,
+            nome,
+            descricao,
+            cidade,
+            contato,
+            imagem,
+            data_postagem,
+            status,
+            usuario_id,
+            especie,
+            sexo,
+            porte
+        FROM pets
+        WHERE status = 'Encontrado'
+        ORDER BY id DESC
     """)
 
     pets = cursor.fetchall()
 
     cursor.close()
+
     conexao.close()
 
-    return str(pets)
+    return render_template(
+        "encontrados.html",
+        pets=pets
+    )
+
+
+# =========================================================
+# MEUS PETS
+# =========================================================
 
 @app.route("/meus_posts")
 def meus_posts():
 
     if "usuario_id" not in session:
+
         return redirect("/login")
 
-    conexao = sqlite3.connect("database/bingolu.db", timeout=10)
+    conexao = sqlite3.connect(
+        CAMINHO_BANCO,
+        timeout=10
+    )
 
     cursor = conexao.cursor()
 
+    # IMPORTANTE:
+    # Esta ordem precisa ser mantida porque
+    # o meus_posts.html utiliza esses índices.
     cursor.execute("""
-    SELECT
-        id,
-        nome,
-        descricao,
-        cidade,
-        contato,
-        imagem,
-        data_postagem, 
-        status
-    FROM pets
-    WHERE usuario_id = ?
-    AND status = 'Perdido'
-    ORDER BY id DESC
-    """, (session["usuario_id"],))
+        SELECT
+            id,
+            nome,
+            descricao,
+            cidade,
+            contato,
+            imagem,
+            data_postagem,
+            status
+        FROM pets
+        WHERE usuario_id = ?
+        AND status = 'Perdido'
+        ORDER BY id DESC
+    """, (
+        session["usuario_id"],
+    ))
 
     pets = cursor.fetchall()
 
     cursor.close()
+
     conexao.close()
 
-    return render_template("meus_posts.html", pets=pets)
+    return render_template(
+        "meus_posts.html",
+        pets=pets
+    )
 
-@app.route("/marcar_encontrado/<int:id_post>")
-def marcar_encontrado(id_post):
+
+# =========================================================
+# GALERIA DE FOTOS
+# =========================================================
+
+@app.route(
+    "/fotos_pet/<int:id_pet>"
+)
+def fotos_pet(id_pet):
 
     if "usuario_id" not in session:
-        return redirect("/login")
 
-    conexao = sqlite3.connect("database/bingolu.db", timeout=10)
+        return jsonify({
+            "fotos": []
+        }), 401
+
+    conexao = sqlite3.connect(
+        CAMINHO_BANCO,
+        timeout=10
+    )
 
     cursor = conexao.cursor()
 
     cursor.execute("""
-    UPDATE pets
-    SET status = 'Encontrado'
-    WHERE id = ? AND usuario_id = ?
+        SELECT imagem
+        FROM pets
+        WHERE id = ?
+    """, (
+        id_pet,
+    ))
+
+    pet = cursor.fetchone()
+
+    if not pet:
+
+        cursor.close()
+
+        conexao.close()
+
+        return jsonify({
+            "fotos": []
+        }), 404
+
+    fotos = []
+
+    if pet[0]:
+
+        fotos.append(
+            "/static/uploads/"
+            + pet[0]
+        )
+
+    cursor.execute("""
+        SELECT imagem
+        FROM fotos_pets
+        WHERE pet_id = ?
+        ORDER BY id ASC
+    """, (
+        id_pet,
+    ))
+
+    fotos_adicionais = (
+        cursor.fetchall()
+    )
+
+    cursor.close()
+
+    conexao.close()
+
+    for foto in fotos_adicionais:
+
+        if foto[0]:
+
+            fotos.append(
+                "/static/uploads/"
+                + foto[0]
+            )
+
+    return jsonify({
+        "fotos": fotos
+    })
+
+
+# =========================================================
+# MARCAR COMO ENCONTRADO
+# =========================================================
+
+@app.route(
+    "/marcar_encontrado/<int:id_post>"
+)
+def marcar_encontrado(id_post):
+
+    if "usuario_id" not in session:
+
+        return redirect("/login")
+
+    conexao = sqlite3.connect(
+        CAMINHO_BANCO,
+        timeout=10
+    )
+
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+        UPDATE pets
+        SET status = 'Encontrado'
+        WHERE id = ?
+        AND usuario_id = ?
     """, (
         id_post,
         session["usuario_id"]
@@ -400,36 +1186,62 @@ def marcar_encontrado(id_post):
     conexao.commit()
 
     cursor.close()
+
     conexao.close()
 
-    return redirect("/meus_posts")
+    return redirect(
+        "/meus_posts"
+    )
 
-@app.route("/editar_post/<int:id_post>", methods=["GET", "POST"])
+
+# =========================================================
+# EDITAR POSTAGEM
+# =========================================================
+
+@app.route(
+    "/editar_post/<int:id_post>",
+    methods=["GET", "POST"]
+)
 def editar_post(id_post):
 
     if "usuario_id" not in session:
+
         return redirect("/login")
 
-    conexao = sqlite3.connect("database/bingolu.db", timeout=10)
+    conexao = sqlite3.connect(
+        CAMINHO_BANCO,
+        timeout=10
+    )
 
     cursor = conexao.cursor()
 
     if request.method == "POST":
 
-        nome = request.form["nome"]
-        descricao = request.form["descricao"]
-        cidade = request.form["cidade"]
-        contato = request.form["contato"]
+        nome = request.form[
+            "nome"
+        ].strip()
+
+        descricao = request.form[
+            "descricao"
+        ].strip()
+
+        cidade = request.form[
+            "cidade"
+        ].strip()
+
+        contato = request.form[
+            "contato"
+        ].strip()
 
         cursor.execute("""
-        UPDATE pets
-        SET
-            nome = ?,
-            descricao = ?,
-            cidade = ?,
-            contato = ?
-        WHERE id = ?
-        AND usuario_id = ?
+            UPDATE pets
+            SET
+                nome = ?,
+                descricao = ?,
+                cidade = ?,
+                contato = ?
+            WHERE id = ?
+            AND usuario_id = ?
         """, (
             nome,
             descricao,
@@ -442,20 +1254,23 @@ def editar_post(id_post):
         conexao.commit()
 
         cursor.close()
+
         conexao.close()
 
-        return redirect("/meus_posts")
+        return redirect(
+            "/meus_posts"
+        )
 
     cursor.execute("""
-    SELECT
-        id,
-        nome,
-        descricao,
-        cidade,
-        contato
-    FROM pets
-    WHERE id = ?
-    AND usuario_id = ?
+        SELECT
+            id,
+            nome,
+            descricao,
+            cidade,
+            contato
+        FROM pets
+        WHERE id = ?
+        AND usuario_id = ?
     """, (
         id_post,
         session["usuario_id"]
@@ -464,24 +1279,39 @@ def editar_post(id_post):
     pet = cursor.fetchone()
 
     cursor.close()
+
     conexao.close()
 
-    return render_template("editar_post.html", pet=pet)
+    return render_template(
+        "editar_post.html",
+        pet=pet
+    )
 
-@app.route("/excluir_post/<int:id_post>")
+
+# =========================================================
+# EXCLUIR POSTAGEM
+# =========================================================
+
+@app.route(
+    "/excluir_post/<int:id_post>"
+)
 def excluir_post(id_post):
 
     if "usuario_id" not in session:
+
         return redirect("/login")
 
-    conexao = sqlite3.connect("database/bingolu.db", timeout=10)
+    conexao = sqlite3.connect(
+        CAMINHO_BANCO,
+        timeout=10
+    )
 
     cursor = conexao.cursor()
 
     cursor.execute("""
-    DELETE FROM pets
-    WHERE id = ?
-    AND usuario_id = ?
+        DELETE FROM pets
+        WHERE id = ?
+        AND usuario_id = ?
     """, (
         id_post,
         session["usuario_id"]
@@ -490,119 +1320,429 @@ def excluir_post(id_post):
     conexao.commit()
 
     cursor.close()
+
     conexao.close()
 
-    return redirect("/meus_posts")
+    return redirect(
+        "/meus_posts"
+    )
 
-@app.route("/post_pet", methods=["GET", "POST"])
+
+# =========================================================
+# NOVA POSTAGEM DE PET
+# =========================================================
+
+@app.route(
+    "/post_pet",
+    methods=["GET", "POST"]
+)
 def post_pet():
 
     if "usuario_id" not in session:
+
         return redirect("/login")
 
     if request.method == "POST":
 
-        nome = request.form["nome"]
-        descricao = request.form["descricao"]
-        cidade = request.form["cidade"]
-        contato = request.form["contato"]
-        data_postagem = datetime.now().strftime("%d/%m/%Y")
+        nome = request.form[
+            "nome"
+        ].strip()
+
+        descricao = request.form[
+            "descricao"
+        ].strip()
+
+        contato = request.form[
+            "contato"
+        ].strip()
+
+        data_postagem = (
+            datetime.now().strftime(
+                "%d/%m/%Y"
+            )
+        )
+
         status = "Perdido"
 
-        # NOVAS ADIÇÕES: Coleta os novos campos do formulário
-        especie = request.form.get("especie")
-        sexo = request.form.get("sexo")
-        
-        # Só captura o porte se for Canino, senão grava como None (vazio) no SQLite
-        porte = request.form.get("porte") if especie == "Canino" else None
-
-        imagem = request.files["imagem"]
-        if not arquivo_permitido(imagem.filename):
-            return "Formato de imagem inválido"
-
-        nome_arquivo = secure_filename(imagem.filename)
-
-        caminho_imagem = os.path.join(
-            app.config["UPLOAD_FOLDER"],
-            nome_arquivo
+        nome_dono = session.get(
+            "usuario_nome",
+            "Usuário Registrado"
         )
 
-        imagem.save(caminho_imagem)
-
-        conexao = sqlite3.connect("database/bingolu.db", timeout=10)
-        cursor = conexao.cursor()
-
-        # INSERT atualizado para incluir especie, sexo e porte
-        cursor.execute("""
-        INSERT INTO pets (
-            nome,
-            descricao,
-            cidade,
-            contato,
-            usuario_id,
-            imagem,
-            data_postagem,
-            status,
-            especie,
-            sexo,
-            porte
+        especie = request.form.get(
+            "especie"
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            nome,
-            descricao,
-            cidade,
-            contato,
-            session["usuario_id"],
-            nome_arquivo,
-            data_postagem,
-            status,
-            especie,   # Novo parâmetro
-            sexo,      # Novo parâmetro
-            porte      # Novo parâmetro
-        ))
 
-        conexao.commit()
-        cursor.close()
-        conexao.close()
+        sexo = request.form.get(
+            "sexo"
+        )
 
-        return redirect("/feed")
-    return render_template("post_pet.html")
+        faixa_etaria = (
+            request.form.get(
+                "faixa_etaria"
+            )
+        )
+
+        # -------------------------------------------------
+        # CATEGORIAS OFICIAIS
+        # -------------------------------------------------
+
+        categorias_validas = {
+            "Canino",
+            "Felino",
+            "Ave",
+            "Outro"
+        }
+
+        if especie not in categorias_validas:
+
+            return (
+                "Selecione uma categoria "
+                "válida para o animal."
+            )
+
+        porte = (
+            request.form.get(
+                "porte"
+            )
+            if especie == "Canino"
+            else None
+        )
+
+        # -------------------------------------------------
+        # CEP
+        # -------------------------------------------------
+
+        cep_form = request.form[
+            "cep"
+        ].strip()
+
+        cep_limpo = limpar_cep(
+            cep_form
+        )
+
+        if len(cep_limpo) != 8:
+
+            return (
+                "CEP inválido. "
+                "Informe exatamente "
+                "8 números."
+            )
+
+        # -------------------------------------------------
+        # FOTOS
+        # -------------------------------------------------
+
+        fotos = [
+            foto
+            for foto in request.files.getlist(
+                "fotos"
+            )
+            if foto and foto.filename
+        ]
+
+        # 3 obrigatórias + até 2 extras.
+        if len(fotos) < 3 or len(fotos) > 5:
+
+            return (
+                "É obrigatório enviar "
+                "de 3 a 5 fotos do animal."
+            )
+
+        for foto in fotos:
+
+            if (
+                not foto
+                or not foto.filename
+            ):
+
+                return (
+                    "As 3 fotos do animal "
+                    "são obrigatórias."
+                )
+
+            if not arquivo_permitido(
+                foto.filename
+            ):
+
+                return (
+                    "Formato de imagem inválido."
+                )
+
+        os.makedirs(
+            app.config[
+                "UPLOAD_FOLDER"
+            ],
+            exist_ok=True
+        )
+
+        nomes_fotos = []
+
+        caminhos_fotos = []
+
+        try:
+
+            # -------------------------------------------------
+            # SALVAR ARQUIVOS
+            # -------------------------------------------------
+
+            for foto in fotos:
+
+                extensao = (
+                    foto.filename
+                    .rsplit(
+                        ".",
+                        1
+                    )[1]
+                    .lower()
+                )
+
+                nome_arquivo = (
+                    f"{uuid.uuid4().hex}"
+                    f".{extensao}"
+                )
+
+                caminho_foto = os.path.join(
+                    app.config[
+                        "UPLOAD_FOLDER"
+                    ],
+                    nome_arquivo
+                )
+
+                foto.save(
+                    caminho_foto
+                )
+
+                nomes_fotos.append(
+                    nome_arquivo
+                )
+
+                caminhos_fotos.append(
+                    caminho_foto
+                )
+
+            # -------------------------------------------------
+            # GEOLOCALIZAÇÃO DO PET
+            # -------------------------------------------------
+
+            (
+                latitude_pet,
+                longitude_pet,
+                cidade_pet,
+                uf_pet
+            ) = geocodificar_cep(
+                cep_limpo
+            )
+
+            if (
+                latitude_pet is None
+                or longitude_pet is None
+                or cidade_pet is None
+                or uf_pet is None
+            ):
+
+                raise ValueError(
+                    "Não foi possível localizar "
+                    "o CEP do desaparecimento."
+                )
+
+            # -------------------------------------------------
+            # SALVAMENTO
+            # -------------------------------------------------
+
+            conexao = sqlite3.connect(
+                CAMINHO_BANCO,
+                timeout=10
+            )
+
+            cursor = conexao.cursor()
+
+            try:
+
+                # Primeira foto = principal
+                cursor.execute("""
+                    INSERT INTO pets (
+                        nome,
+                        descricao,
+                        cidade,
+                        contato,
+                        usuario_id,
+                        imagem,
+                        data_postagem,
+                        status,
+                        especie,
+                        sexo,
+                        porte,
+                        latitude,
+                        longitude,
+                        cep_pet,
+                        faixa_etaria,
+                        nome_dono
+                    )
+                    VALUES (
+                        ?, ?, ?, ?, ?,
+                        ?, ?, ?, ?, ?,
+                        ?, ?, ?, ?, ?, ?
+                    )
+                """, (
+                    nome,
+                    descricao,
+                    cidade_pet,
+                    contato,
+                    session["usuario_id"],
+                    nomes_fotos[0],
+                    data_postagem,
+                    status,
+                    especie,
+                    sexo,
+                    porte,
+                    latitude_pet,
+                    longitude_pet,
+                    cep_form,
+                    faixa_etaria,
+                    nome_dono
+                ))
+
+                id_pet = (
+                    cursor.lastrowid
+                )
+
+                # Fotos 2 em diante = galeria
+                fotos_galeria = [
+                    (
+                        id_pet,
+                        nome_foto
+                    )
+                    for nome_foto
+                    in nomes_fotos[1:]
+                ]
+
+                cursor.executemany("""
+                    INSERT INTO fotos_pets (
+                        pet_id,
+                        imagem
+                    )
+                    VALUES (?, ?)
+                """, fotos_galeria)
+
+                conexao.commit()
+
+            except Exception:
+
+                conexao.rollback()
+
+                raise
+
+            finally:
+
+                cursor.close()
+
+                conexao.close()
+
+        except Exception as erro:
+
+            # Remove arquivos caso o processo falhe.
+            for caminho_foto in (
+                caminhos_fotos
+            ):
+
+                try:
+
+                    os.remove(
+                        caminho_foto
+                    )
+
+                except OSError:
+
+                    pass
+
+            if isinstance(
+                erro,
+                ValueError
+            ):
+
+                return str(erro)
+
+            print(
+                "[POST PET] "
+                "Erro ao salvar anúncio: "
+                f"{erro}"
+            )
+
+            return (
+                "Não foi possível publicar "
+                "o anúncio. Tente novamente."
+            )
+
+        return redirect(
+            "/feed"
+        )
+
+    return render_template(
+        "post_pet.html"
+    )
 
 
+# =========================================================
+# INFORMAR AVISTAMENTO
+# =========================================================
 
-@app.route("/avistar/<int:id_pet>", methods=["GET", "POST"])
+@app.route(
+    "/avistar/<int:id_pet>",
+    methods=["GET", "POST"]
+)
 def avistar(id_pet):
 
     if request.method == "POST":
 
-        local = request.form["local"]
-        observacao = request.form["observacao"]
+        local = request.form[
+            "local"
+        ].strip()
 
-        nome_contato = request.form["nome_contato"]
-        telefone_contato = request.form["telefone_contato"]
-        email_contato = request.form["email_contato"]
+        observacao = request.form[
+            "observacao"
+        ].strip()
 
-        data_avistamento = datetime.now().strftime("%d/%m/%Y")
+        nome_contato = request.form[
+            "nome_contato"
+        ].strip()
+
+        telefone_contato = (
+            request.form[
+                "telefone_contato"
+            ].strip()
+        )
+
+        email_contato = (
+            request.form[
+                "email_contato"
+            ].strip()
+        )
+
+        data_avistamento = (
+            datetime.now().strftime(
+                "%d/%m/%Y"
+            )
+        )
 
         conexao = sqlite3.connect(
-            "database/bingolu.db",
+            CAMINHO_BANCO,
             timeout=10
         )
 
         cursor = conexao.cursor()
 
         cursor.execute("""
-        INSERT INTO avistamentos (
-            pet_id,
-            local,
-            observacao,
-            data_avistamento,
-            nome_contato,
-            telefone_contato,
-            email_contato
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO avistamentos (
+                pet_id,
+                local,
+                observacao,
+                data_avistamento,
+                nome_contato,
+                telefone_contato,
+                email_contato
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (
             id_pet,
             local,
@@ -616,9 +1756,12 @@ def avistar(id_pet):
         conexao.commit()
 
         cursor.close()
+
         conexao.close()
 
-        return redirect("/feed")
+        return redirect(
+            "/feed"
+        )
 
     return render_template(
         "avistar.html",
@@ -626,152 +1769,125 @@ def avistar(id_pet):
     )
 
 
-import re
+# =========================================================
+# CENTRAL DE AVISTAMENTOS
+# =========================================================
 
-@app.route("/meus_avistamentos")
+@app.route(
+    "/meus_avistamentos"
+)
 def meus_avistamentos():
 
     if "usuario_id" not in session:
-        return redirect("/login")
+
+        return redirect(
+            "/login"
+        )
 
     conexao = sqlite3.connect(
-        "database/bingolu.db",
+        CAMINHO_BANCO,
         timeout=10
     )
 
     cursor = conexao.cursor()
 
     cursor.execute("""
-    SELECT        
-        pets.nome,
-        avistamentos.local,
-        avistamentos.observacao,
-        avistamentos.data_avistamento,
-        avistamentos.nome_contato,
-        avistamentos.telefone_contato,
-        avistamentos.email_contato
-    FROM avistamentos
-    INNER JOIN pets
-        ON avistamentos.pet_id = pets.id
-    WHERE pets.usuario_id = ?
-    ORDER BY avistamentos.id DESC
-    """, (session["usuario_id"],))
+        SELECT
+            pets.nome,
+            avistamentos.local,
+            avistamentos.observacao,
+            avistamentos.data_avistamento,
+            avistamentos.nome_contato,
+            avistamentos.telefone_contato,
+            avistamentos.email_contato
+        FROM avistamentos
+        INNER JOIN pets
+            ON avistamentos.pet_id = pets.id
+        WHERE pets.usuario_id = ?
+        ORDER BY avistamentos.id DESC
+    """, (
+        session["usuario_id"],
+    ))
 
-    avistamentos_brutos = cursor.fetchall()
+    avistamentos_brutos = (
+        cursor.fetchall()
+    )
 
     cursor.close()
+
     conexao.close()
 
-    # Formata os números de telefone vindos do banco antes de enviar para o HTML
-    avistamentos_formatados = []
-    for aviso in avistamentos_brutos:
-        aviso_lista = list(aviso)
-        
-        # Pega o telefone na posição 5 da consulta SQL
-        telefone_bruto = str(aviso_lista[5]).strip()
-        
-        # Remove tudo o que não for número (limpeza idêntica à do cadastro)
-        telefone_limpo = re.sub(r"\D", "", telefone_bruto)
-        
-        # Aplica a máscara padrão brasileira baseada na quantidade de dígitos
-        if len(telefone_limpo) == 11:
-            telefone_formatado = f"({telefone_limpo[:2]}) {telefone_limpo[2:7]}-{telefone_limpo[7:]}"
-        elif len(telefone_limpo) == 10:
-            telefone_formatado = f"({telefone_limpo[:2]}) {telefone_limpo[2:6]}-{telefone_limpo[6:]}"
-        else:
-            # Se já veio formatado corretamente do banco, mantém o formato original
-            telefone_formatado = telefone_bruto
+    # -------------------------------------------------
+    # FORMATAÇÃO DOS TELEFONES
+    # -------------------------------------------------
 
-        # Substitui o telefone original pelo número formatado na lista
-        aviso_lista[5] = telefone_formatado
-        avistamentos_formatados.append(aviso_lista)
+    avistamentos_formatados = []
+
+    for aviso in avistamentos_brutos:
+
+        aviso_lista = list(
+            aviso
+        )
+
+        telefone_bruto = str(
+            aviso_lista[5]
+        ).strip()
+
+        telefone_limpo = re.sub(
+            r"\D",
+            "",
+            telefone_bruto
+        )
+
+        if len(
+            telefone_limpo
+        ) == 11:
+
+            telefone_formatado = (
+                f"({telefone_limpo[:2]}) "
+                f"{telefone_limpo[2:7]}-"
+                f"{telefone_limpo[7:]}"
+            )
+
+        elif len(
+            telefone_limpo
+        ) == 10:
+
+            telefone_formatado = (
+                f"({telefone_limpo[:2]}) "
+                f"{telefone_limpo[2:6]}-"
+                f"{telefone_limpo[6:]}"
+            )
+
+        else:
+
+            telefone_formatado = (
+                telefone_bruto
+            )
+
+        aviso_lista[5] = (
+            telefone_formatado
+        )
+
+        avistamentos_formatados.append(
+            aviso_lista
+        )
 
     return render_template(
         "meus_avistamentos.html",
-        avistamentos=avistamentos_formatados
+        avistamentos=(
+            avistamentos_formatados
+        )
     )
 
-@app.route("/encontrados")
-def encontrados():
 
-    if "usuario_id" not in session:
-        return redirect("/login")
-
-    conexao = sqlite3.connect(
-        "database/bingolu.db",
-        timeout=10
-    )
-
-    cursor = conexao.cursor()
-
-    # SELECT estruturado exatamente igual ao do feed, mas filtrando por 'Encontrado'
-    cursor.execute("""
-    SELECT
-        id,
-        nome,
-        descricao,
-        cidade,
-        contato,
-        imagem,
-        data_postagem,
-        status,
-        usuario_id,
-        especie,
-        sexo,
-        porte
-    FROM pets
-    WHERE status = 'Encontrado'
-    ORDER BY id DESC
-    """)
-
-    pets = cursor.fetchall()
-
-    cursor.close()
-    conexao.close()
-
-    return render_template(
-        "encontrados.html",
-        pets=pets
-    )
-
-@app.route("/limpar_avistamentos")
-def limpar_avistamentos():
-
-    conexao = sqlite3.connect(
-        "database/bingolu.db",
-        timeout=10 
-    )
-
-    cursor = conexao.cursor()
-
-    cursor.execute("""
-    DELETE FROM avistamentos
-    """)
-
-    conexao.commit()
-
-    cursor.close()
-    conexao.close()
-
-    return "Todos os avistamentos foram removidos"
-
-@app.route("/reset_demo")
-def reset_demo():
-
-    conn = sqlite3.connect("database/bingolu.db")
-
-    cursor = conn.cursor()
-
-    cursor.execute("DELETE FROM avistamentos")
-    cursor.execute("DELETE FROM pets")
-
-    conn.commit()
-
-    conn.close()
-
-    return "Sistema resetado para a demonstração."
+# EXECUÇÃO
+# =========================================================
 
 if __name__ == "__main__":
-    app.run(debug=True)
 
-    
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 10000)),
+        debug=False
+    )

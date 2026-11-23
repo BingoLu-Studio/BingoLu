@@ -41,7 +41,6 @@ body{
 
 }
 
-
 /* ==========================
    LINKS
 ========================== */
@@ -53,8 +52,6 @@ a{
     transition:.25s;
 
 }
-
-
 /* ==========================
    NAVBAR
 ========================== */
@@ -1351,56 +1348,70 @@ button,
 
 }
 
-/* ---------- Submenu Meus Pets ---------- */
 
-.submenu-meus-pets{
+/* =========================================================
+   ABAS INTERNAS — PADRÃO DO FEED
+   ========================================================= */
 
-    display:flex;
-
-    justify-content:center;
-
-    gap:15px;
-
-    margin:30px 0;
-
+.submenu-meus-pets {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    width: 100%;
+    max-width: 900px;
+    margin: 30px auto 35px;
+    border-bottom: 1px solid #ddd;
 }
 
-.submenu-meus-pets a{
+.submenu-meus-pets a {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 
-    background:white;
+    min-height: 68px;
+    padding: 10px 18px;
+    box-sizing: border-box;
 
-    color:#6a0dad;
+    background: transparent;
+    color: #555;
 
-    border:2px solid #6a0dad;
+    border: none;
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
 
-    padding:12px 28px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 17px;
+    font-weight: 700;
 
-    border-radius:30px;
+    text-align: center;
+    text-decoration: none;
 
-    font-size:15px;
-
-    font-weight:bold;
-
-    transition:.25s;
-
+    transition: .2s;
 }
 
-.submenu-meus-pets a:hover{
-
-    background:#6a0dad;
-
-    color:white;
-
+.submenu-meus-pets a:hover {
+    color: #6A0DAD;
 }
 
-.submenu-meus-pets .submenu-ativo{
+.submenu-meus-pets .submenu-ativo {
+    color: #6A0DAD;
+    border-bottom-color: #6A0DAD;
+    pointer-events: none;
+}
 
-    background:#6a0dad;
+@media (max-width: 700px) {
 
-    color:white;
+    .submenu-meus-pets {
+        width: 92%;
+    }
 
-    pointer-events:none;
-
+    .submenu-meus-pets a {
+        min-height: 60px;
+        font-size: 15px;
+        padding: 8px 10px;
+    }
 }
 
 /* =========================================
@@ -2361,4 +2372,4865 @@ button,
     background-color: #5a189a !important; /* Roxo sólido preenchido */
     border-color: #5a189a !important;
     box-shadow: 0 4px 10px rgba(90, 24, 154, 0.2);
+}
+/* Estilo dinâmico para os cards na aba de Alertas */
+.card-pet.card-alerta-urgente {
+    border: 2px solid #ff4757 !important;
+    box-shadow: 0 4px 15px rgba(255, 71, 87, 0.15) !important;
+}
+
+
+/* =========================================================
+   BINGOLÚ — FEED COMPACTO / BASE RESPONSIVA
+   Bloco consolidado para a fase atual do MVP.
+   Mantém o restante do sistema e controla o Feed por último,
+   evitando conflitos com regras antigas do arquivo.
+========================================================= */
+
+/* ---------- Estrutura geral do Feed ---------- */
+.pagina-feed {
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.pagina-feed .cabecalho-feed {
+    max-width: 760px;
+    margin: 28px auto 12px;
+    padding: 0 18px;
+}
+
+.pagina-feed .cabecalho-feed .titulo-pagina {
+    margin: 0 0 8px;
+    font-size: clamp(26px, 3vw, 34px);
+    line-height: 1.15;
+}
+
+.pagina-feed .cabecalho-feed .subtitulo {
+    max-width: 620px;
+    margin: 0 auto;
+    font-size: 15px;
+    line-height: 1.45;
+}
+
+/* ---------- Abas principais ---------- */
+.pagina-feed .abas-feed {
+    width: min(760px, calc(100% - 28px));
+    margin: 12px auto 14px;
+    gap: 4px;
+    border-bottom: 1px solid #ddd6e2;
+}
+
+.pagina-feed .aba-link {
+    padding: 9px 18px 10px;
+    border-bottom: 3px solid transparent;
+    font-size: 14px;
+    color: #706a73;
+}
+
+.pagina-feed .aba-link.aba-ativa {
+    color: #5a189a;
+    border-bottom-color: #6a0dad;
+}
+
+/* ---------- Área do filtro ---------- */
+.pagina-feed .filtros-especie {
+    width: min(760px, calc(100% - 28px));
+    margin: 0 auto 14px;
+    padding: 8px 10px;
+    gap: 7px;
+    justify-content: center;
+}
+
+.pagina-feed .botao-filtro {
+    padding: 7px 13px;
+    border-width: 1px;
+    border-radius: 20px;
+    font-size: 13px;
+    box-shadow: none;
+}
+
+.pagina-feed .botao-filtro:hover {
+    transform: none;
+}
+
+/* Caso o filtro esteja dentro de <details>. */
+.pagina-feed details.filtro-especie,
+.pagina-feed .filtro-especie details {
+    width: min(760px, calc(100% - 28px));
+}
+
+/* ---------- Grade dos cards ---------- */
+.pagina-feed .feed-container {
+    width: min(1180px, calc(100% - 28px));
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 4px 0 28px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 360px));
+    justify-content: center;
+    align-items: start;
+    gap: 18px;
+}
+
+/* ---------- Card ---------- */
+.pagina-feed .card-pet {
+    width: 100%;
+    max-width: 360px;
+    margin: 0;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .09);
+    overflow: hidden;
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.pagina-feed .card-pet:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 20px rgba(0, 0, 0, .12);
+}
+
+/* ---------- Imagem padronizada ---------- */
+.pagina-feed .card-pet > img {
+    display: block;
+    width: 100%;
+    height: 235px;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    object-position: center;
+    background: #e9e7e9;
+    cursor: pointer;
+}
+
+/* Preparação visual para futura galeria de fotos. */
+.pagina-feed .card-pet > img:hover {
+    filter: brightness(.97);
+}
+
+/* ---------- Nome ---------- */
+.pagina-feed .card-pet > h2 {
+    margin: 13px 16px 4px;
+    color: #5a189a;
+    text-align: left;
+    font-size: 23px;
+    line-height: 1.15;
+}
+
+/* ---------- Status ---------- */
+.pagina-feed .card-pet > .status {
+    display: inline-block;
+    margin: 0 16px 8px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    line-height: 1;
+}
+
+/* ---------- Informações resumidas ---------- */
+.pagina-feed .card-pet .info-pet {
+    margin: 0;
+    padding: 0 16px 10px;
+}
+
+.pagina-feed .card-pet .info-pet > p {
+    margin: 7px 0;
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+.pagina-feed .card-pet .info-pet > p strong {
+    display: inline;
+    margin-right: 3px;
+    color: #51495a;
+    font-weight: 700;
+}
+
+/* Esconde informações secundárias da visão inicial.
+   Elas continuam disponíveis no HTML e podem ser reativadas
+   futuramente no detalhe do anúncio. */
+.pagina-feed .card-pet .info-pet > p:nth-of-type(2),
+.pagina-feed .card-pet .info-pet > p.data-postagem {
+    display: none;
+}
+
+/* Distância vira uma informação contextual, não um dado solto. */
+.pagina-feed .card-pet .info-pet > p.distancia-pet {
+    display: inline-block;
+    margin: 4px 0 2px;
+    padding: 5px 9px;
+    border-radius: 8px;
+    background: #f3eff8;
+    color: #5a189a;
+    font-size: 12px;
+}
+
+.pagina-feed .card-pet .info-pet > p.distancia-pet strong {
+    color: inherit;
+}
+
+/* ---------- Detalhes ---------- */
+.pagina-feed .card-pet details.detalhes-sanfona {
+    margin: 5px 0 0;
+    border-top: 1px solid #ece8ed;
+}
+
+.pagina-feed .card-pet .titulo-sanfona {
+    padding: 9px 0;
+    color: #5a189a;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    list-style-position: inside;
+}
+
+.pagina-feed .card-pet .conteudo-sanfona {
+    padding: 0 0 6px;
+}
+
+.pagina-feed .card-pet .conteudo-sanfona p {
+    margin: 7px 0;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.pagina-feed .card-pet .conteudo-sanfona strong {
+    color: #5a189a;
+}
+
+/* ---------- Rodapé do card ---------- */
+.pagina-feed .card-pet > hr {
+    margin: 0 16px 10px;
+    background: #ece8ed;
+}
+
+.pagina-feed .card-pet .meu-anuncio,
+.pagina-feed .card-pet .botao-avistar {
+    display: block;
+    width: calc(100% - 32px);
+    margin: 0 16px 15px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.pagina-feed .card-pet .meu-anuncio {
+    background: #f0eafa;
+    color: #5a189a;
+}
+
+.pagina-feed .card-pet .botao-avistar {
+    background: #6a0dad;
+    color: #fff;
+}
+
+.pagina-feed .card-pet .botao-avistar:hover {
+    background: #580b91;
+}
+
+/* ---------- Alertas ---------- */
+.pagina-feed .card-pet.card-alerta-urgente {
+    border: 2px solid #e53935 !important;
+    box-shadow: 0 5px 18px rgba(229, 57, 53, .16) !important;
+}
+
+.pagina-feed .card-pet.card-alerta-urgente > h2 {
+    color: #c62828;
+}
+
+.pagina-feed .card-pet.card-alerta-urgente .distancia-pet {
+    background: #fff0f0;
+    color: #c62828;
+}
+
+/* ---------- Card vazio ---------- */
+.pagina-feed .aviso-card {
+    width: min(360px, 100%);
+    max-width: 360px;
+    padding: 28px 22px;
+}
+
+.pagina-feed .aviso-card h2 {
+    margin: 0 0 10px;
+    font-size: 22px;
+}
+
+.pagina-feed .aviso-card p {
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+/* =========================================================
+   RESPONSIVIDADE — MOBILE COMO BASE
+========================================================= */
+
+@media (max-width: 900px) {
+
+    .pagina-feed .navbar {
+        padding: 12px 16px;
+        gap: 10px;
+    }
+
+    .pagina-feed .navbar h1 {
+        font-size: 26px;
+    }
+
+    .pagina-feed .menu {
+        gap: 4px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .pagina-feed .menu a {
+        padding: 7px 9px;
+        font-size: 12px;
+    }
+
+    .pagina-feed .cabecalho-feed {
+        margin-top: 20px;
+    }
+
+    .pagina-feed .feed-container {
+        grid-template-columns: minmax(0, 1fr);
+        width: min(100% - 20px, 420px);
+        gap: 14px;
+    }
+
+    .pagina-feed .card-pet {
+        max-width: none;
+    }
+
+    .pagina-feed .card-pet > img {
+        height: auto;
+        aspect-ratio: 4 / 3;
+        max-height: 310px;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .pagina-feed .cabecalho-feed {
+        margin: 16px auto 8px;
+        padding: 0 12px;
+    }
+
+    .pagina-feed .cabecalho-feed .titulo-pagina {
+        font-size: 25px;
+    }
+
+    .pagina-feed .cabecalho-feed .subtitulo {
+        font-size: 14px;
+    }
+
+    .pagina-feed .abas-feed {
+        width: calc(100% - 18px);
+        margin: 8px auto 10px;
+    }
+
+    .pagina-feed .aba-link {
+        flex: 1;
+        padding: 9px 5px;
+        text-align: center;
+        font-size: 13px;
+    }
+
+    .pagina-feed .filtros-especie {
+        width: calc(100% - 18px);
+        margin-bottom: 10px;
+        padding: 6px;
+    }
+
+    .pagina-feed .botao-filtro {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    .pagina-feed .feed-container {
+        width: calc(100% - 18px);
+        padding-bottom: 20px;
+    }
+
+    .pagina-feed .card-pet > img {
+        aspect-ratio: 4 / 3;
+        height: auto;
+    }
+
+    .pagina-feed .card-pet > h2 {
+        margin-top: 11px;
+        font-size: 22px;
+    }
+
+    .pagina-feed .card-pet .info-pet {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .pagina-feed .card-pet .meu-anuncio,
+    .pagina-feed .card-pet .botao-avistar {
+        width: calc(100% - 28px);
+        margin-left: 14px;
+        margin-right: 14px;
+    }
+}
+
+/* =========================================================
+   FEED BINGOLÚ — NOVA ESTRUTURA COMPACTA
+   ========================================================= */
+
+   .pagina-feed {
+    overflow-x: hidden;
+}
+
+.feed-principal {
+    width: min(1180px, 94%);
+    margin: 0 auto;
+    padding: 28px 0 50px;
+}
+
+
+/* =========================================================
+   CABEÇALHO
+   ========================================================= */
+
+.pagina-feed .cabecalho-feed {
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+.pagina-feed .titulo-pagina {
+    margin: 0 0 6px;
+    font-size: 30px;
+}
+
+.pagina-feed .subtitulo {
+    margin: 0;
+    font-size: 15px;
+}
+
+
+/* =========================================================
+   ABAS
+   ========================================================= */
+
+.pagina-feed .abas-feed {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 16px;
+}
+
+.pagina-feed .aba-link {
+    padding: 10px 22px;
+    text-decoration: none;
+    font-weight: 700;
+    color: #555;
+    border-bottom: 3px solid transparent;
+}
+
+.pagina-feed .aba-link:hover {
+    color: #6A0DAD;
+}
+
+.pagina-feed .aba-link.aba-ativa {
+    color: #6A0DAD;
+    border-bottom-color: #6A0DAD;
+}
+
+
+/* =========================================================
+   FILTRO
+   ========================================================= */
+
+.pagina-feed .filtro-especie {
+    width: fit-content;
+    margin: 0 0 18px;
+}
+
+.pagina-feed .filtro-especie summary {
+    cursor: pointer;
+    font-weight: 700;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.pagina-feed .opcoes-especie {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.pagina-feed .opcoes-especie a {
+    text-decoration: none;
+    color: #555;
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 6px 11px;
+    border-radius: 7px;
+    font-size: 13px;
+}
+
+.pagina-feed .opcoes-especie a:hover,
+.pagina-feed .opcoes-especie a.filtro-ativo {
+    background: #6A0DAD;
+    color: #fff;
+    border-color: #6A0DAD;
+}
+
+
+/* =========================================================
+   GRADE DOS CARDS
+   ========================================================= */
+
+.pagina-feed .feed-container {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    align-items: start;
+}
+
+
+/* =========================================================
+   CARD
+   ========================================================= */
+
+.pagina-feed .card-pet {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 14px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+}
+
+
+/* =========================================================
+   IMAGEM
+   ========================================================= */
+
+.pagina-feed .imagem-pet-link {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: #eee;
+}
+
+.pagina-feed .imagem-pet {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+
+/* =========================================================
+   CONTEÚDO
+   ========================================================= */
+
+.pagina-feed .conteudo-card {
+    padding: 13px 14px 14px;
+}
+
+.pagina-feed .cabecalho-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.pagina-feed .cabecalho-card h2 {
+    margin: 0;
+    color: #5d0aa0;
+    font-size: 23px;
+    line-height: 1.1;
+}
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.pagina-feed .status.perdido {
+    margin: 0;
+    padding: 4px 8px;
+    border-radius: 5px;
+    background: #f3f3f3;
+    color: #555;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   DISTÂNCIA
+   ========================================================= */
+
+.pagina-feed .distancia-pet {
+    margin: 0 0 9px;
+    padding: 6px 8px;
+    background: #f5f1f8;
+    border-radius: 6px;
+    color: #5d0aa0;
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   CONTATO
+   ========================================================= */
+
+.pagina-feed .contato-card {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.pagina-feed .contato-card strong {
+    color: #333;
+}
+
+.pagina-feed .contato-card span {
+    color: #555;
+}
+
+
+/* =========================================================
+   DETALHES
+   ========================================================= */
+
+.pagina-feed .detalhes-sanfona {
+    border-top: 1px solid #eee;
+    padding-top: 8px;
+}
+
+.pagina-feed .detalhes-sanfona summary {
+    cursor: pointer;
+    color: #6A0DAD;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.pagina-feed .conteudo-sanfona {
+    padding-top: 8px;
+    font-size: 13px;
+    color: #555;
+}
+
+.pagina-feed .conteudo-sanfona p {
+    margin: 5px 0;
+}
+
+
+/* =========================================================
+   AÇÃO
+   ========================================================= */
+
+.pagina-feed .acao-card {
+    margin-top: 11px;
+}
+
+.pagina-feed .botao-avistar {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 12px;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 7px;
+    background: #6A0DAD;
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.pagina-feed .botao-avistar:hover {
+    opacity: 0.9;
+}
+
+.pagina-feed .meu-anuncio {
+    display: block;
+    text-align: center;
+    color: #6A0DAD;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   AVISO SEM RESULTADOS
+   ========================================================= */
+
+.pagina-feed .aviso-card {
+    grid-column: 1 / -1;
+    width: min(500px, 100%);
+    margin: 10px auto;
+    padding: 28px;
+    box-sizing: border-box;
+    text-align: center;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+}
+
+.pagina-feed .aviso-card h2 {
+    margin-top: 0;
+    color: #5d0aa0;
+}
+
+.pagina-feed .texto-secundario {
+    color: #777;
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .pagina-feed .feed-container {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE — PRIORIDADE DO PROJETO
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .feed-principal {
+        width: 94%;
+        padding-top: 18px;
+    }
+
+    .pagina-feed .titulo-pagina {
+        font-size: 24px;
+    }
+
+    .pagina-feed .subtitulo {
+        font-size: 13px;
+    }
+
+    .pagina-feed .abas-feed {
+        width: 100%;
+    }
+
+    .pagina-feed .aba-link {
+        flex: 1;
+        text-align: center;
+        padding: 9px 5px;
+        font-size: 13px;
+    }
+
+    .pagina-feed .feed-container {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .pagina-feed .card-pet {
+        border-radius: 11px;
+    }
+
+    .pagina-feed .imagem-pet-link {
+        aspect-ratio: 16 / 10;
+    }
+
+    .pagina-feed .conteudo-card {
+        padding: 12px;
+    }
+
+    .pagina-feed .cabecalho-card h2 {
+        font-size: 21px;
+    }
+
+}
+
+/* =========================================================
+   BINGOLÚ — AJUSTE VISUAL FINAL DO FEED
+   Esta seção deve permanecer no FINAL do style.css
+   ========================================================= */
+
+/* ---------- Tipografia do Feed ---------- */
+
+.pagina-feed {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Mantém a identidade divertida apenas nos pontos principais */
+.pagina-feed .navbar h1,
+.pagina-feed .titulo-pagina {
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
+    font-weight: bold;
+}
+
+
+/* =========================================================
+   CABEÇALHO MAIS COMPACTO
+   ========================================================= */
+
+.pagina-feed .cabecalho-feed {
+    max-width: 1100px;
+    margin: 28px auto 18px;
+    padding: 0 20px;
+}
+
+.pagina-feed .cabecalho-feed .titulo-pagina {
+    font-size: 35px;
+    line-height: 1.2;
+    margin-bottom: 8px;
+}
+
+.pagina-feed .cabecalho-feed .subtitulo {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    line-height: 1.45;
+}
+
+
+/* =========================================================
+   ABAS
+   ========================================================= */
+
+.pagina-feed .abas-feed {
+    width: min(820px, calc(100% - 28px));
+    margin: 10px auto 14px;
+    gap: 8px;
+}
+
+.pagina-feed .aba-link {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 10px 22px;
+}
+
+
+/* =========================================================
+   FILTRO DE ESPÉCIE
+   ========================================================= */
+
+.pagina-feed .filtro-especie {
+    width: min(820px, calc(100% - 28px));
+    margin: 0 auto 16px;
+}
+
+.pagina-feed .filtro-especie summary {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    padding: 9px 13px;
+}
+
+
+/* =========================================================
+   GRADE DO FEED
+   ========================================================= */
+
+.pagina-feed .feed-container {
+    width: min(1240px, calc(100% - 36px));
+    max-width: 1240px;
+
+    margin: 0 auto;
+    padding: 4px 0 35px;
+
+    display: grid;
+    grid-template-columns: repeat(3, minmax(300px, 1fr));
+    gap: 22px;
+
+    align-items: start;
+}
+
+
+/* =========================================================
+   CARD
+   ========================================================= */
+
+.pagina-feed .card-pet {
+    width: 100%;
+    max-width: none;
+
+    border-radius: 14px;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.09);
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   IMAGEM
+   ========================================================= */
+
+.pagina-feed .card-pet > img {
+    display: block;
+
+    width: 100%;
+    height: 235px;
+
+    aspect-ratio: 4 / 3;
+
+    object-fit: cover;
+    object-position: center;
+
+    background: #e9e7e9;
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   NOME DO ANIMAL
+   ========================================================= */
+
+.pagina-feed .card-pet > h2 {
+    margin: 15px 17px 5px;
+
+    color: #5a189a;
+
+    text-align: left;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+
+    line-height: 1.15;
+}
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.pagina-feed .card-pet > .status {
+    display: inline-block;
+
+    margin: 0 17px 8px;
+
+    padding: 5px 10px;
+
+    border-radius: 999px;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+
+    line-height: 1;
+}
+
+
+/* =========================================================
+   INFORMAÇÕES DO CARD
+   ========================================================= */
+
+.pagina-feed .card-pet .info-pet {
+    margin: 0;
+    padding: 0 17px 10px;
+}
+
+.pagina-feed .card-pet .info-pet > p {
+    margin: 8px 0;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+
+    line-height: 1.4;
+}
+
+.pagina-feed .card-pet .info-pet > p strong {
+    color: #403b45;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   DISTÂNCIA
+   ========================================================= */
+
+.pagina-feed .card-pet .info-pet > p.distancia-pet {
+    display: block;
+
+    margin: 6px 0 8px;
+
+    padding: 7px 10px;
+
+    border-radius: 8px;
+
+    background: #f3eff8;
+
+    color: #5a189a;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   DETALHES
+   ========================================================= */
+
+.pagina-feed .card-pet details.detalhes-sanfona {
+    margin-top: 6px;
+
+    border-top: 1px solid #ece8ed;
+}
+
+.pagina-feed .card-pet .titulo-sanfona {
+    padding: 10px 0;
+
+    color: #5a189a;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.pagina-feed .card-pet .conteudo-sanfona {
+    padding: 0 0 8px;
+}
+
+.pagina-feed .card-pet .conteudo-sanfona p {
+    margin: 8px 0;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+
+    line-height: 1.45;
+}
+
+
+/* =========================================================
+   BOTÃO / MEU ANÚNCIO
+   ========================================================= */
+
+.pagina-feed .botao-avistar {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+}
+
+.pagina-feed .meu-anuncio {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1050px) {
+
+    .pagina-feed .feed-container {
+        grid-template-columns:
+            repeat(2, minmax(290px, 1fr));
+
+        width: min(820px, calc(100% - 28px));
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE — PRIORIDADE DO PROJETO
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .pagina-feed .cabecalho-feed {
+        margin: 20px auto 12px;
+        padding: 0 14px;
+    }
+
+    .pagina-feed .cabecalho-feed .titulo-pagina {
+        font-size: 27px;
+    }
+
+    .pagina-feed .cabecalho-feed .subtitulo {
+        font-size: 14px;
+    }
+
+    .pagina-feed .abas-feed {
+        width: calc(100% - 18px);
+        margin: 8px auto 10px;
+    }
+
+    .pagina-feed .aba-link {
+        flex: 1;
+
+        padding: 9px 6px;
+
+        text-align: center;
+
+        font-size: 13px;
+    }
+
+    .pagina-feed .filtro-especie {
+        width: calc(100% - 18px);
+        margin-bottom: 10px;
+    }
+
+    .pagina-feed .feed-container {
+        width: calc(100% - 18px);
+
+        grid-template-columns: 1fr;
+
+        gap: 15px;
+
+        padding-bottom: 20px;
+    }
+
+    .pagina-feed .card-pet > img {
+        width: 100%;
+        height: auto;
+
+        aspect-ratio: 4 / 3;
+
+        object-fit: cover;
+    }
+
+    .pagina-feed .card-pet > h2 {
+        font-size: 24px;
+        margin: 13px 15px 5px;
+    }
+
+    .pagina-feed .card-pet .info-pet {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .pagina-feed .card-pet .info-pet > p {
+        font-size: 14px;
+    }
+
+    .pagina-feed .card-pet .titulo-sanfona {
+        font-size: 14px;
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE PEQUENO
+   ========================================================= */
+
+@media (max-width: 420px) {
+
+    .pagina-feed .cabecalho-feed .titulo-pagina {
+        font-size: 24px;
+    }
+
+    .pagina-feed .aba-link {
+        font-size: 12px;
+        padding-left: 4px;
+        padding-right: 4px;
+    }
+
+    .pagina-feed .card-pet > h2 {
+        font-size: 23px;
+    }
+
+}
+
+
+
+
+/* =========================================================
+   BINGOLÚ — NOVA ESTRUTURA VISUAL DO FEED
+   ÚLTIMO BLOCO — SOBRESCREVE REGRAS ANTERIORES
+   ========================================================= */
+
+/* =========================
+   BASE DO FEED
+   ========================= */
+
+   .pagina-feed {
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+/* =========================
+   NAVBAR
+   ========================= */
+
+.pagina-feed .navbar {
+    min-height: 64px;
+    height: 64px;
+    padding: 0 28px;
+    box-sizing: border-box;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 24px;
+}
+
+.pagina-feed .navbar h1 {
+    margin: 0;
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
+    font-size: 30px;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.pagina-feed .menu {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.pagina-feed .menu a {
+    padding: 9px 14px;
+    border-radius: 8px;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+
+/* =========================
+   ÁREA PRINCIPAL
+   ========================= */
+
+.pagina-feed .cabecalho-feed {
+    width: min(1100px, calc(100% - 40px));
+    margin: 24px auto 10px;
+    padding: 0;
+    box-sizing: border-box;
+
+    text-align: center;
+}
+
+.pagina-feed .cabecalho-feed .titulo-pagina {
+    margin: 0 0 6px;
+
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
+    font-size: 34px;
+    line-height: 1.15;
+}
+
+.pagina-feed .cabecalho-feed .subtitulo {
+    margin: 0 auto;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+
+/* =========================
+   ABAS
+   ========================= */
+
+.pagina-feed .abas-feed {
+    width: min(820px, calc(100% - 40px));
+    margin: 8px auto 12px;
+
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+
+    gap: 4px;
+}
+
+.pagina-feed .aba-link {
+    min-width: 170px;
+
+    padding: 9px 18px;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+
+    text-align: center;
+}
+
+
+/* =========================
+   FILTRO
+   ========================= */
+
+.pagina-feed .filtro-especie,
+.pagina-feed .filtros-especie {
+    width: min(820px, calc(100% - 40px));
+    margin: 0 auto 16px;
+    box-sizing: border-box;
+}
+
+
+/* =========================
+   GRADE DO FEED
+   ========================= */
+
+.pagina-feed .feed-container {
+    width: min(1180px, calc(100% - 40px));
+    max-width: 1180px;
+
+    margin: 0 auto;
+    padding: 4px 0 35px;
+
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    gap: 20px;
+
+    align-items: start;
+    justify-items: stretch;
+}
+
+
+/* =========================
+   CARD
+   ========================= */
+
+.pagina-feed .card-pet {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+
+    margin: 0;
+    padding: 0;
+
+    box-sizing: border-box;
+
+    background: #ffffff;
+    border: 1px solid #ded9e1;
+    border-radius: 14px;
+
+    overflow: hidden;
+
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .09);
+
+    text-align: left;
+}
+
+
+/* =========================
+   IMAGEM
+   ========================= */
+
+.pagina-feed .card-pet > img {
+    display: block;
+
+    width: 100%;
+    height: 245px;
+
+    aspect-ratio: 4 / 3;
+
+    object-fit: cover;
+    object-position: center;
+
+    background: #eeeeee;
+}
+
+
+/* =========================
+   NOME + STATUS
+   ========================= */
+
+.pagina-feed .card-pet > h2 {
+    margin: 14px 16px 6px;
+
+    color: #5a189a;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+
+    line-height: 1.2;
+    text-align: left;
+}
+
+.pagina-feed .card-pet > .status {
+    display: inline-block;
+
+    margin: 0 16px 9px;
+    padding: 5px 9px;
+
+    border-radius: 6px;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+
+    line-height: 1;
+
+    text-transform: uppercase;
+}
+
+
+/* =========================
+   INFORMAÇÕES DO PET
+   ========================= */
+
+.pagina-feed .card-pet .info-pet {
+    margin: 0;
+    padding: 0 16px 10px;
+}
+
+.pagina-feed .card-pet .info-pet > p {
+    margin: 7px 0;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    line-height: 1.35;
+}
+
+.pagina-feed .card-pet .info-pet > p strong {
+    color: #403a44;
+    font-weight: 700;
+}
+
+
+/* =========================
+   DISTÂNCIA
+   ========================= */
+
+.pagina-feed .card-pet .info-pet > p.distancia-pet {
+    display: block;
+
+    margin: 7px 0 9px;
+    padding: 7px 10px;
+
+    background: #f3eff8;
+    border-radius: 7px;
+
+    color: #5a189a;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.pagina-feed .card-pet .info-pet > p.distancia-pet strong {
+    color: inherit;
+}
+
+
+/* =========================
+   CONTATO
+   ========================= */
+
+.pagina-feed .card-pet .info-pet > p:first-child {
+    font-size: 15px;
+    line-height: 1.45;
+}
+
+.pagina-feed .card-pet .info-pet > p:first-child strong {
+    color: #333333;
+}
+
+
+/* =========================
+   OCULTAR INFORMAÇÕES SECUNDÁRIAS
+   ========================= */
+
+.pagina-feed .card-pet .info-pet > p:nth-of-type(2),
+.pagina-feed .card-pet .info-pet > p.data-postagem {
+    display: none;
+}
+
+
+/* =========================
+   VER DETALHES
+   ========================= */
+
+.pagina-feed .card-pet details.detalhes-sanfona {
+    margin: 4px 16px 0;
+
+    border-top: 1px solid #e8e4e9;
+}
+
+.pagina-feed .card-pet .titulo-sanfona {
+    padding: 10px 0;
+
+    color: #5a189a;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.pagina-feed .card-pet .conteudo-sanfona {
+    padding: 2px 0 8px;
+
+    color: #555555;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.pagina-feed .card-pet .conteudo-sanfona p {
+    margin: 6px 0;
+}
+
+
+/* =========================
+   RODAPÉ DO CARD
+   ========================= */
+
+.pagina-feed .card-pet > hr {
+    margin: 4px 16px 10px;
+
+    border: 0;
+    border-top: 1px solid #e8e4e9;
+}
+
+.pagina-feed .card-pet .meu-anuncio,
+.pagina-feed .card-pet .botao-avistar {
+    display: block;
+
+    width: calc(100% - 32px);
+    box-sizing: border-box;
+
+    margin: 0 16px 15px;
+    padding: 10px 12px;
+
+    border-radius: 8px;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+
+    text-align: center;
+}
+
+
+/* =========================
+   ALERTAS PRÓXIMOS
+   ========================= */
+
+.pagina-feed .card-pet.card-alerta-urgente {
+    border: 2px solid #e53935 !important;
+    box-shadow: 0 4px 16px rgba(229, 57, 53, .15) !important;
+}
+
+.pagina-feed .card-pet.card-alerta-urgente > h2 {
+    color: #c62828;
+}
+
+.pagina-feed .card-pet.card-alerta-urgente .distancia-pet {
+    background: #fff0f0;
+    color: #c62828;
+}
+
+
+/* =========================
+   SEM RESULTADOS
+   ========================= */
+
+.pagina-feed .aviso-card {
+    width: min(500px, 100%);
+    max-width: 500px;
+
+    margin: 10px auto;
+    padding: 28px;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1050px) {
+
+    .pagina-feed .feed-container {
+        width: min(820px, calc(100% - 32px));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .pagina-feed .navbar {
+        height: auto;
+        min-height: 60px;
+
+        padding: 10px 14px;
+
+        flex-direction: column;
+        align-items: stretch;
+
+        gap: 8px;
+    }
+
+    .pagina-feed .navbar h1 {
+        text-align: center;
+        font-size: 27px;
+    }
+
+    .pagina-feed .menu {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 3px;
+    }
+
+    .pagina-feed .menu a {
+        padding: 7px 8px;
+        font-size: 12px;
+    }
+
+
+    .pagina-feed .cabecalho-feed {
+        width: calc(100% - 24px);
+        margin: 18px auto 8px;
+    }
+
+    .pagina-feed .cabecalho-feed .titulo-pagina {
+        font-size: 27px;
+    }
+
+    .pagina-feed .cabecalho-feed .subtitulo {
+        font-size: 14px;
+    }
+
+
+    .pagina-feed .abas-feed {
+        width: calc(100% - 24px);
+        margin: 8px auto 10px;
+    }
+
+    .pagina-feed .aba-link {
+        min-width: 0;
+        flex: 1;
+        padding: 9px 5px;
+        font-size: 13px;
+    }
+
+
+    .pagina-feed .filtro-especie,
+    .pagina-feed .filtros-especie {
+        width: calc(100% - 24px);
+        margin-bottom: 12px;
+    }
+
+
+    .pagina-feed .feed-container {
+        width: calc(100% - 24px);
+
+        grid-template-columns: 1fr;
+
+        gap: 14px;
+        padding-bottom: 20px;
+    }
+
+
+    .pagina-feed .card-pet > img {
+        height: auto;
+        aspect-ratio: 4 / 3;
+        object-fit: cover;
+    }
+
+    .pagina-feed .card-pet > h2 {
+        font-size: 23px;
+    }
+
+    .pagina-feed .card-pet .info-pet > p {
+        font-size: 15px;
+    }
+
+    .pagina-feed .card-pet .titulo-sanfona {
+        font-size: 14px;
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE PEQUENO
+   ========================================================= */
+
+@media (max-width: 420px) {
+
+    .pagina-feed .navbar h1 {
+        font-size: 25px;
+    }
+
+    .pagina-feed .cabecalho-feed .titulo-pagina {
+        font-size: 24px;
+    }
+
+    .pagina-feed .card-pet > h2 {
+        font-size: 22px;
+    }
+
+}
+
+/* =========================================================
+   BINGOLÚ — FEED | REESTRUTURAÇÃO VISUAL
+   ========================================================= */
+
+/* =========================================================
+   1. ÁREA GERAL
+   ========================================================= */
+
+   .pagina-feed {
+    background: #f1efe3;
+    color: #29232d;
+}
+
+.feed-pagina {
+    width: min(1180px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 22px 0 45px;
+}
+
+
+/* =========================================================
+   2. NAVBAR
+   ========================================================= */
+
+.pagina-feed .navbar {
+    min-height: 64px;
+    padding: 0 28px;
+
+    display: flex;
+    align-items: center;
+}
+
+.pagina-feed .navbar-conteudo {
+    width: 100%;
+    max-width: 1180px;
+    margin: 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.pagina-feed .logo-bingolu {
+    font-size: 25px;
+    line-height: 1;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.pagina-feed .menu {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pagina-feed .menu a {
+    padding: 10px 14px;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.pagina-feed .menu a:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.pagina-feed .menu a[href="/feed"] {
+    background: #ffffff;
+    color: #6a0dad;
+}
+
+
+/* =========================================================
+   3. CABEÇALHO
+   ========================================================= */
+
+.feed-cabecalho {
+    margin: 4px 0 22px;
+}
+
+.feed-etiqueta {
+    display: inline-block;
+
+    margin-bottom: 8px;
+    padding: 4px 10px;
+
+    border-radius: 6px;
+
+    background: #e8daf0;
+    color: #6a0dad;
+
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+.feed-cabecalho h1 {
+    margin: 0;
+
+    color: #28212c;
+
+    font-size: 32px;
+    line-height: 1.15;
+    font-weight: 800;
+}
+
+.feed-cabecalho p {
+    margin: 6px 0 0;
+
+    color: #6d6670;
+
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   4. ABAS
+   ========================================================= */
+
+.feed-abas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.feed-aba {
+    min-height: 66px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    padding: 12px 18px;
+
+    background: #ffffff;
+    border: 1px solid #d9d2db;
+    border-radius: 9px;
+
+    color: #403943;
+    text-decoration: none;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.feed-aba:hover {
+    border-color: #bca5c7;
+}
+
+.feed-aba-ativa {
+    background: #6a0dad;
+    border-color: #6a0dad;
+    color: #ffffff;
+}
+
+.feed-aba-titulo {
+    font-size: 16px;
+    line-height: 1.2;
+    font-weight: 800;
+}
+
+.feed-aba-descricao {
+    margin-top: 4px;
+
+    font-size: 12px;
+    line-height: 1.3;
+
+    opacity: 0.72;
+}
+
+.feed-aba-ativa .feed-aba-descricao {
+    opacity: 0.88;
+}
+
+
+/* =========================================================
+   5. FILTRO
+   ========================================================= */
+
+.filtros-feed {
+    margin-bottom: 18px;
+}
+
+.filtro-atual {
+    width: 100%;
+    min-height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 14px;
+
+    background: #ffffff;
+    border: 1px solid #d9d2db;
+    border-radius: 8px;
+
+    color: #403943;
+
+    cursor: pointer;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.filtro-atual::after {
+    content: "⌄";
+
+    color: #6a0dad;
+    font-size: 16px;
+}
+
+.filtros-feed[open] .filtro-atual {
+    border-radius: 8px 8px 0 0;
+    border-color: #bca5c7;
+}
+
+.filtros-opcoes {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+
+    padding: 6px;
+
+    background: #ffffff;
+    border: 1px solid #bca5c7;
+    border-top: 0;
+    border-radius: 0 0 8px 8px;
+}
+
+.filtro-opcao {
+    padding: 8px 10px;
+
+    border-radius: 5px;
+
+    color: #5e5760;
+    text-decoration: none;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.filtro-opcao:hover {
+    background: #f4eff6;
+    color: #6a0dad;
+}
+
+.filtro-opcao-ativo {
+    background: #eadff0;
+    color: #6a0dad;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   6. GRID
+   ========================================================= */
+
+.grid-pets {
+    display: grid;
+
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    gap: 16px;
+    align-items: start;
+}
+
+
+/* =========================================================
+   7. CARD
+   ========================================================= */
+
+.pet-card {
+    overflow: hidden;
+
+    background: #ffffff;
+
+    border: 1px solid #ddd7df;
+    border-radius: 11px;
+
+    box-shadow: 0 2px 7px rgba(45, 30, 50, 0.06);
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.pet-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(45, 30, 50, 0.09);
+}
+
+.pet-card-alerta {
+    border-color: #d66a6a;
+}
+
+
+/* =========================================================
+   8. IMAGEM
+   ========================================================= */
+
+.pet-imagem-container {
+    width: 100%;
+    height: 215px;
+
+    overflow: hidden;
+
+    background: #e5e1e5;
+}
+
+.pet-imagem {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+    object-position: center;
+}
+
+
+/* =========================================================
+   9. CONTEÚDO DO CARD
+   ========================================================= */
+
+.pet-card-conteudo {
+    padding: 14px 15px 15px;
+}
+
+.pet-card-cabecalho {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 10px;
+    margin-bottom: 9px;
+}
+
+.pet-nome {
+    min-width: 0;
+
+    margin: 0;
+
+    color: #29222d;
+
+    font-size: 20px;
+    line-height: 1.15;
+    font-weight: 800;
+
+    overflow-wrap: anywhere;
+}
+
+.pet-status {
+    flex-shrink: 0;
+
+    padding: 4px 7px;
+
+    border-radius: 5px;
+
+    background: #eee9ee;
+    color: #625963;
+
+    font-size: 10px;
+    line-height: 1;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.pet-card-alerta .pet-status {
+    background: #fae5e5;
+    color: #b13b3b;
+}
+
+.meu-anuncio {
+    background: #eadff0;
+    color: #6a0dad;
+}
+
+
+/* =========================================================
+   10. DISTÂNCIA
+   ========================================================= */
+
+.pet-distancia {
+    display: inline-flex;
+    align-items: center;
+
+    margin-bottom: 10px;
+    padding: 5px 8px;
+
+    border-radius: 5px;
+
+    background: #f4f0f5;
+    color: #544c56;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.pet-distancia::before {
+    content: "•";
+
+    margin-right: 6px;
+
+    color: #6a0dad;
+    font-size: 15px;
+    line-height: 0;
+}
+
+
+/* =========================================================
+   11. CONTATO
+   ========================================================= */
+
+.pet-contato {
+    display: flex;
+    flex-direction: column;
+
+    gap: 2px;
+
+    padding: 9px 0;
+
+    border-top: 1px solid #eee9ee;
+    border-bottom: 1px solid #eee9ee;
+}
+
+.pet-contato-label {
+    color: #857d87;
+
+    font-size: 10px;
+    line-height: 1.2;
+    font-weight: 800;
+
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.pet-contato strong {
+    color: #39313b;
+
+    font-size: 14px;
+    line-height: 1.3;
+}
+
+
+/* =========================================================
+   12. DETALHES
+   ========================================================= */
+
+.pet-detalhes {
+    margin-top: 8px;
+}
+
+.pet-detalhes summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 5px 0;
+
+    color: #6a0dad;
+
+    cursor: pointer;
+
+    font-size: 12px;
+    font-weight: 800;
+
+    list-style: none;
+}
+
+.pet-detalhes summary::-webkit-details-marker {
+    display: none;
+}
+
+.pet-detalhes summary::after {
+    content: "+";
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 18px;
+    height: 18px;
+
+    border-radius: 50%;
+
+    background: #eee5f1;
+
+    font-size: 14px;
+}
+
+.pet-detalhes[open] summary::after {
+    content: "−";
+}
+
+.pet-detalhes-conteudo {
+    display: flex;
+    flex-direction: column;
+
+    gap: 7px;
+
+    padding-top: 7px;
+}
+
+.pet-info-item {
+    display: flex;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    padding-bottom: 6px;
+
+    border-bottom: 1px solid #f0edf0;
+
+    font-size: 12px;
+}
+
+.pet-info-item strong {
+    color: #827a84;
+    font-weight: 600;
+}
+
+.pet-info-item span {
+    color: #403943;
+    font-weight: 700;
+    text-align: right;
+}
+
+.pet-descricao {
+    margin: 3px 0 0;
+
+    color: #655d67;
+
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.pet-data {
+    margin: 0;
+
+    color: #8a828b;
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   13. ALERTA
+   ========================================================= */
+
+.alerta-card {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    margin-bottom: 9px;
+    padding: 7px 9px;
+
+    border-radius: 5px;
+
+    background: #fff0f0;
+    color: #b13b3b;
+
+    font-size: 11px;
+    line-height: 1.3;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   14. BOTÃO
+   ========================================================= */
+
+.pet-card-acao {
+    margin-top: 11px;
+}
+
+.botao-avistar {
+    width: 100%;
+    min-height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 8px 12px;
+
+    border: 0;
+    border-radius: 7px;
+
+    background: #6a0dad;
+    color: #ffffff;
+
+    text-decoration: none;
+
+    font-size: 12px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition: background 0.15s ease;
+}
+
+.botao-avistar:hover {
+    background: #580b91;
+}
+
+
+/* =========================================================
+   15. FEED VAZIO
+   ========================================================= */
+
+.feed-vazio {
+    padding: 45px 20px;
+
+    background: #ffffff;
+    border: 1px solid #ddd7df;
+    border-radius: 11px;
+
+    text-align: center;
+}
+
+.feed-vazio-icone {
+    margin-bottom: 8px;
+
+    color: #8b7c90;
+    font-size: 32px;
+}
+
+.feed-vazio h2 {
+    margin: 0;
+
+    color: #39313b;
+
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.feed-vazio p {
+    max-width: 450px;
+
+    margin: 6px auto 0;
+
+    color: #777079;
+
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+
+/* =========================================================
+   16. TABLET
+   ========================================================= */
+
+@media (max-width: 1000px) {
+
+    .grid-pets {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .filtros-opcoes {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+
+/* =========================================================
+   17. CELULAR
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .pagina-feed .navbar {
+        padding: 0 16px;
+    }
+
+    .pagina-feed .navbar-conteudo {
+        gap: 12px;
+    }
+
+    .pagina-feed .logo-bingolu {
+        font-size: 21px;
+    }
+
+    .pagina-feed .menu {
+        gap: 2px;
+    }
+
+    .pagina-feed .menu a {
+        padding: 8px 9px;
+        font-size: 12px;
+    }
+
+    .feed-pagina {
+        width: calc(100% - 24px);
+        padding-top: 18px;
+    }
+
+    .feed-cabecalho h1 {
+        font-size: 27px;
+    }
+
+    .feed-cabecalho p {
+        font-size: 14px;
+    }
+
+    .feed-abas {
+        grid-template-columns: 1fr;
+    }
+
+    .feed-aba {
+        min-height: 58px;
+    }
+
+    .grid-pets {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .pet-imagem-container {
+        height: 245px;
+    }
+
+    .filtros-opcoes {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+
+/* =========================================================
+   18. CELULARES PEQUENOS
+   ========================================================= */
+
+@media (max-width: 430px) {
+
+    .pagina-feed .navbar {
+        min-height: auto;
+        padding: 10px 12px;
+    }
+
+    .pagina-feed .navbar-conteudo {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .pagina-feed .logo-bingolu {
+        text-align: center;
+    }
+
+    .pagina-feed .menu {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .feed-pagina {
+        width: calc(100% - 18px);
+    }
+
+    .feed-cabecalho h1 {
+        font-size: 25px;
+    }
+
+    .pet-imagem-container {
+        height: 230px;
+    }
+
+    .pet-card-cabecalho {
+        align-items: flex-start;
+    }
+}
+
+/* =========================================================
+   BINGOLÚ — AJUSTE PROPORCIONAL FINAL DO FEED
+   Não altera a estrutura HTML.
+   ========================================================= */
+
+
+/* =========================================================
+   NAVBAR
+   ========================================================= */
+
+   .pagina-feed .navbar {
+    padding: 20px 38px;
+    margin-bottom: 0;
+}
+
+.pagina-feed .navbar h1 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 38px;
+    font-weight: 700;
+    letter-spacing: .3px;
+}
+
+.pagina-feed .menu {
+    gap: 8px;
+}
+
+.pagina-feed .menu a {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    padding: 11px 15px;
+}
+
+
+/* =========================================================
+   APROXIMAÇÃO ENTRE NAVBAR E FEED
+   ========================================================= */
+
+.pagina-feed .feed-principal {
+    width: min(1320px, 94%);
+    margin: 0 auto;
+    padding-top: 10px;
+}
+
+
+/* =========================================================
+   CABEÇALHO
+   ========================================================= */
+
+.pagina-feed .cabecalho-feed {
+    max-width: 1100px;
+    margin: 12px auto 18px;
+    padding: 0 20px;
+}
+
+.pagina-feed .titulo-pagina {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 1.15;
+    margin: 0 0 10px;
+    color: #5d0aa0;
+}
+
+.pagina-feed .subtitulo {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 18px;
+    line-height: 1.5;
+    color: #666;
+}
+
+
+/* =========================================================
+   ABAS
+   ========================================================= */
+
+.pagina-feed .abas-feed {
+    position: relative;
+    z-index: 10;
+    width: min(1000px, 100%);
+    margin: 12px auto 18px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.pagina-feed .aba-link {
+    position: relative;
+    z-index: 11;
+    pointer-events: auto;
+    cursor: pointer;
+
+    padding: 13px 24px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.25;
+    text-decoration: none;
+}
+
+.pagina-feed .aba-link span {
+    display: block;
+    margin-top: 4px;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+
+/* =========================================================
+   FILTRO DE ESPÉCIE
+   ========================================================= */
+
+.pagina-feed .filtro-especie {
+    margin-bottom: 22px;
+}
+
+.pagina-feed .filtro-especie summary {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    padding: 10px 14px;
+}
+
+
+/* =========================================================
+   GRADE
+   ========================================================= */
+
+.pagina-feed .feed-container {
+    width: min(1280px, 100%);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 380px));
+    justify-content: center;
+    gap: 30px;
+}
+
+
+/* =========================================================
+   CARD
+   ========================================================= */
+
+.pagina-feed .card-pet {
+    width: 380px;
+    max-width: 380px;
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   IMAGEM
+   Mantém a proporção anterior e prepara o espaço
+   para futura galeria.
+   ========================================================= */
+
+.pagina-feed .imagem-pet-link {
+    display: block;
+    width: 100%;
+    height: 280px;
+    overflow: hidden;
+    background: rgb(229, 229, 229);
+}
+
+.pagina-feed .imagem-pet {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+
+/* =========================================================
+   CONTEÚDO DO CARD
+   ========================================================= */
+
+.pagina-feed .conteudo-card {
+    padding: 22px;
+}
+
+
+/* =========================================================
+   NOME + STATUS
+   ========================================================= */
+
+.pagina-feed .cabecalho-card {
+    gap: 14px;
+    margin-bottom: 12px;
+}
+
+.pagina-feed .cabecalho-card h2 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 29px;
+    line-height: 1.15;
+    font-weight: 700;
+    color: #5d0aa0;
+}
+
+.pagina-feed .status.perdido {
+    padding: 7px 11px;
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   DISTÂNCIA
+   ========================================================= */
+
+.pagina-feed .distancia-pet {
+    margin-bottom: 13px;
+    padding: 8px 11px;
+    font-size: 16px;
+}
+
+
+/* =========================================================
+   CONTATO
+   ========================================================= */
+
+.pagina-feed .contato-card {
+    gap: 5px;
+    margin-bottom: 14px;
+    font-size: 17px;
+    line-height: 1.4;
+}
+
+.pagina-feed .contato-card strong {
+    font-size: 17px;
+}
+
+.pagina-feed .contato-card span {
+    font-size: 17px;
+}
+
+
+/* =========================================================
+   DETALHES
+   ========================================================= */
+
+.pagina-feed .detalhes-sanfona {
+    padding-top: 14px;
+}
+
+.pagina-feed .detalhes-sanfona summary {
+    font-size: 16px;
+}
+
+.pagina-feed .conteudo-sanfona {
+    padding-top: 10px;
+    font-size: 16px;
+}
+
+.pagina-feed .conteudo-sanfona p {
+    margin: 8px 0;
+    line-height: 1.45;
+}
+
+
+/* =========================================================
+   BOTÃO
+   ========================================================= */
+
+.pagina-feed .acao-card {
+    margin-top: 16px;
+}
+
+.pagina-feed .botao-avistar,
+.pagina-feed .meu-anuncio {
+    font-size: 16px;
+    padding: 12px 14px;
+}
+
+
+/* =========================================================
+   ALERTAS
+   ========================================================= */
+
+.pagina-feed .card-alerta-urgente {
+    border-width: 2px;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .pagina-feed .navbar {
+        padding: 16px;
+    }
+
+    .pagina-feed .navbar h1 {
+        font-size: 30px;
+    }
+
+    .pagina-feed .menu a {
+        font-size: 14px;
+        padding: 8px 10px;
+    }
+
+    .pagina-feed .feed-principal {
+        width: 94%;
+        padding-top: 8px;
+    }
+
+    .pagina-feed .titulo-pagina {
+        font-size: 30px;
+    }
+
+    .pagina-feed .subtitulo {
+        font-size: 16px;
+    }
+
+    .pagina-feed .abas-feed {
+        width: 100%;
+        gap: 4px;
+    }
+
+    .pagina-feed .aba-link {
+        flex: 1;
+        padding: 10px 6px;
+        font-size: 14px;
+        text-align: center;
+    }
+
+    .pagina-feed .aba-link span {
+        font-size: 12px;
+    }
+
+    .pagina-feed .feed-container {
+        grid-template-columns: 1fr;
+        width: 100%;
+        gap: 20px;
+    }
+
+    .pagina-feed .card-pet {
+        width: 100%;
+        max-width: 380px;
+    }
+
+    .pagina-feed .imagem-pet-link {
+        height: 280px;
+    }
+
+    .pagina-feed .conteudo-card {
+        padding: 20px;
+    }
+
+    .pagina-feed .cabecalho-card h2 {
+        font-size: 27px;
+    }
+
+    .pagina-feed .contato-card,
+    .pagina-feed .contato-card span,
+    .pagina-feed .contato-card strong {
+        font-size: 16px;
+    }
+}
+
+.pagina-feed .detalhes-sanfona {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.pagina-feed .detalhes-sanfona summary {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.pagina-feed .conteudo-sanfona {
+    padding: 14px 4px 4px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 20px;
+    line-height: 1.55;
+}
+
+.pagina-feed .conteudo-sanfona p {
+    margin: 0;
+    padding: 9px 0;
+    font-size: 20px;
+    line-height: 1.5;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.pagina-feed .conteudo-sanfona p:last-child {
+    border-bottom: none;
+}
+
+.pagina-feed .conteudo-sanfona strong {
+    font-size: 18px;
+    color: #5d0aa0;
+}
+
+
+.pagina-feed .conteudo-sanfona p span {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 17px;
+    color: #666;
+    line-height: 1.5;
+}
+@media (max-width: 700px) {
+
+    .submenu-meus-pets {
+        flex-direction: column;
+        width: 92%;
+        gap: 8px;
+    }
+
+    .submenu-meus-pets a {
+        width: 100%;
+        min-height: 58px;
+    }
+
+    .navbar {
+        padding: 16px 20px;
+    }
+
+    .navbar-conteudo {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .navbar h1 {
+        font-size: 30px;
+        text-align: center;
+    }
+
+    .menu {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .menu a {
+        font-size: 14px;
+        padding: 9px 13px;
+    }
+}
+
+
+
+
+/* =========================================================
+   NAVBAR — PADRÃO FINAL DO FEED
+   ========================================================= */
+
+.navbar {
+    width: 100%;
+    background: #6A0DAD;
+    padding: 17px 35px;
+    box-sizing: border-box;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, .15);
+}
+
+.navbar-conteudo {
+    width: 100%;
+    max-width: 1550px;
+    margin: 0 auto;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    box-sizing: border-box;
+}
+
+.navbar h1 {
+    margin: 0;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: .5px;
+
+    color: white;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.menu {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+
+    gap: 18px;
+    flex-wrap: nowrap;
+}
+
+.menu a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 42px;
+    padding: 9px 18px;
+    box-sizing: border-box;
+
+    color: white;
+
+    border-radius: 8px;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+
+    line-height: 1;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+
+    transition: .25s;
+}
+
+.menu a:hover {
+    background: rgba(255, 255, 255, .18);
+}
+
+.menu a.ativo {
+    background: white;
+    color: #6A0DAD;
+
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .12);
+}
+
+
+/* =========================================================
+   NAVBAR — RESPONSIVO
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .navbar-conteudo {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .menu {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .menu a {
+        font-size: 15px;
+    }
+
+}
+
+
+/* =========================================================
+   MEUS PETS — NIVELAMENTO FINAL COM O FEED
+   NÃO ALTERAR O FEED
+   NÃO ALTERAR FUNÇÕES
+   ========================================================= */
+
+   .pagina-meus-pets .navbar {
+    width: 100%;
+    height: 64px;
+    min-height: 64px;
+    padding: 0 28px;
+    box-sizing: border-box;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #6A0DAD;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, .15);
+}
+
+.pagina-meus-pets .navbar-conteudo {
+    width: 100%;
+    max-width: 1180px;
+    margin: 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.pagina-meus-pets .navbar h1 {
+    margin: 0;
+
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
+    font-size: 30px;
+    font-weight: bold;
+    line-height: 1;
+
+    color: white;
+    white-space: nowrap;
+}
+
+.pagina-meus-pets .menu {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    flex-wrap: nowrap;
+}
+
+.pagina-meus-pets .menu a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: auto;
+    padding: 10px 14px;
+
+    border-radius: 8px;
+    box-sizing: border-box;
+
+    color: white;
+    background: transparent;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.pagina-meus-pets .menu a:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* item ativo — mesmo padrão visual do Feed */
+.pagina-meus-pets .menu a.ativo {
+    background: #ffffff;
+    color: #6A0DAD;
+    box-shadow: none;
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   CABEÇALHO — MEUS PETS
+   ========================================================= */
+
+.pagina-meus-pets > .titulo-pagina {
+    display: block;
+
+    margin: 24px auto 6px;
+    padding: 0 20px;
+
+    color: #5d0aa0;
+
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
+    font-size: 34px;
+    font-weight: bold;
+    line-height: 1.15;
+
+    text-align: center;
+}
+
+.pagina-meus-pets > .subtitulo {
+    display: block;
+
+    max-width: 620px;
+    margin: 0 auto 22px;
+    padding: 0 20px;
+
+    color: #666;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    line-height: 1.45;
+
+    text-align: center;
+}
+
+
+/* =========================================================
+   SUBMENU — MESMA LÓGICA VISUAL DAS ABAS DO FEED
+   ========================================================= */
+
+.pagina-meus-pets .submenu-meus-pets {
+    width: min(820px, calc(100% - 40px));
+
+    margin: 8px auto 12px;
+
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+
+    gap: 4px;
+
+    border-bottom: 1px solid #ddd;
+}
+
+.pagina-meus-pets .submenu-meus-pets a {
+    flex: 1;
+
+    min-width: 170px;
+    min-height: auto;
+
+    padding: 9px 18px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    border: none;
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
+
+    background: transparent;
+    color: #666;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+
+    text-align: center;
+    text-decoration: none;
+
+    transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.pagina-meus-pets .submenu-meus-pets a strong {
+    color: inherit;
+    font-size: 20px;
+}
+
+.pagina-meus-pets .submenu-meus-pets a span {
+    margin-top: 5px;
+    color: inherit;
+    font-size: 15px;
+    font-weight: 400;
+}
+
+.pagina-meus-pets .submenu-meus-pets a:hover {
+    color: #6A0DAD;
+    background: transparent;
+}
+
+.pagina-meus-pets .submenu-meus-pets .submenu-ativo {
+    color: #6A0DAD;
+    background: transparent;
+    border-bottom-color: #6A0DAD;
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .pagina-meus-pets .navbar {
+        height: auto;
+        min-height: 60px;
+        padding: 10px 14px;
+    }
+
+    .pagina-meus-pets .navbar-conteudo {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .pagina-meus-pets .navbar h1 {
+        text-align: center;
+        font-size: 27px;
+    }
+
+    .pagina-meus-pets .menu {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 3px;
+    }
+
+    .pagina-meus-pets .menu a {
+        padding: 7px 8px;
+        font-size: 12px;
+    }
+
+    .pagina-meus-pets > .titulo-pagina {
+        font-size: 27px;
+        margin-top: 22px;
+    }
+
+    .pagina-meus-pets > .subtitulo {
+        font-size: 14px;
+    }
+
+    .pagina-meus-pets .submenu-meus-pets {
+        width: calc(100% - 18px);
+    }
+
+    .pagina-meus-pets .submenu-meus-pets a {
+        padding: 10px 6px;
+    }
+
+    .pagina-meus-pets .submenu-meus-pets a strong {
+        font-size: 16px;
+    }
+
+    .pagina-meus-pets .submenu-meus-pets a span {
+        font-size: 12px;
+    }
+}
+/* =========================================================
+   MEUS PETS — RESPONSIVO
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .pagina-meus-pets .navbar-conteudo {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .pagina-meus-pets .menu {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .pagina-meus-pets .menu a {
+        font-size: 15px;
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* =========================================================
+   BINGOLÚ — PADRONIZAÇÃO FINAL DAS PÁGINAS INTERNAS
+   NÃO ALTERA O FEED
+   NÃO ALTERA LOCALIZAÇÃO
+   NÃO ALTERA GALERIA
+   NÃO ALTERA FUNCIONALIDADES
+   ========================================================= */
+
+   .pagina-interna {
+    background: #f1efe3;
+}
+
+/* =========================================================
+   NAVBAR
+   ========================================================= */
+
+.pagina-interna .navbar {
+    width: 100%;
+    background: #6A0DAD;
+    padding: 18px 35px;
+    box-sizing: border-box;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    box-shadow: 0 3px 12px rgba(0,0,0,.15);
+}
+
+.pagina-interna .navbar-conteudo {
+    width: 100%;
+    max-width: 1550px;
+    margin: 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    box-sizing: border-box;
+}
+
+.pagina-interna .navbar h1 {
+    margin: 0;
+
+    color: white;
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
+    font-size: 34px;
+    font-weight: 700;
+    line-height: 1;
+
+    white-space: nowrap;
+}
+
+.pagina-interna .menu {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: nowrap;
+}
+
+.pagina-interna .menu a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 42px;
+    padding: 10px 18px;
+
+    border-radius: 8px;
+
+    color: white;
+    background: transparent;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1;
+
+    text-decoration: none;
+    white-space: nowrap;
+
+    transition: .25s;
+}
+
+.pagina-interna .menu a:hover {
+    background: rgba(255,255,255,.18);
+}
+
+.pagina-interna .menu a.ativo {
+    background: white;
+    color: #6A0DAD;
+    box-shadow: 0 2px 8px rgba(0,0,0,.18);
+    pointer-events: none;
+}
+
+/* =========================================================
+   TÍTULO
+   ========================================================= */
+
+.pagina-interna > .titulo-pagina,
+.pagina-interna .cabecalho-avistamentos .titulo-pagina {
+    margin: 35px auto 0;
+    padding: 0 20px;
+
+    color: #6A0DAD;
+
+    text-align: center;
+
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 34px;
+    font-weight: 700;
+}
+
+.pagina-interna > .subtitulo,
+.pagina-interna .cabecalho-avistamentos .subtitulo {
+    max-width: 850px;
+    margin: 10px auto 35px;
+    padding: 0 20px;
+
+    color: #6d6d6d;
+
+    text-align: center;
+
+    font-size: 17px;
+    line-height: 1.5;
+}
+
+/* =========================================================
+   SUBMENU MEUS PETS / ENCONTRADOS
+   ========================================================= */
+
+.pagina-interna .submenu-meus-pets {
+    width: min(900px, 92%);
+    margin: 25px auto 35px;
+
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+
+    border-bottom: 1px solid #ddd;
+}
+
+.pagina-interna .submenu-meus-pets a {
+    flex: 1;
+
+    min-height: 70px;
+    padding: 12px 18px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    color: #666;
+    background: transparent;
+
+    border-bottom: 3px solid transparent;
+
+    text-align: center;
+    text-decoration: none;
+
+    transition: .2s;
+}
+
+.pagina-interna .submenu-meus-pets a strong {
+    color: inherit;
+    font-size: 16px;
+}
+
+.pagina-interna .submenu-meus-pets a span {
+    margin-top: 5px;
+    color: #888;
+    font-size: 14px;
+}
+
+.pagina-interna .submenu-meus-pets a:hover {
+    color: #6A0DAD;
+}
+
+.pagina-interna .submenu-meus-pets .submenu-ativo {
+    color: #6A0DAD;
+    border-bottom-color: #6A0DAD;
+}
+
+/* =========================================================
+   ÁREA DOS CARDS INTERNOS
+   ========================================================= */
+
+.pagina-interna .feed-container {
+    width: min(1400px, 92%);
+    margin: 0 auto;
+
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+
+    gap: 30px;
+    padding-bottom: 45px;
+}
+
+/* =========================================================
+   CARDS DE MEUS PETS / ENCONTRADOS
+   ========================================================= */
+
+.pagina-interna .card-pet {
+    width: 380px;
+
+    background: #f5f5f5;
+
+    border-radius: 18px;
+    overflow: hidden;
+
+    box-shadow: 0 5px 18px rgba(0,0,0,.12);
+
+    text-align: left;
+
+    transition: .25s;
+}
+
+.pagina-interna .card-pet:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px rgba(0,0,0,.15);
+}
+
+.pagina-interna .card-pet > img {
+    width: 100%;
+    height: 280px;
+
+    display: block;
+
+    object-fit: contain;
+
+    background: #e5e5e5;
+}
+
+.pagina-interna .card-pet > h2 {
+    margin: 18px 20px 10px;
+
+    color: #6A0DAD;
+
+    text-align: center;
+    font-size: 27px;
+}
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.pagina-interna .card-pet .meu-anuncio {
+    display: block;
+
+    width: fit-content;
+    margin: 0 auto 18px;
+    padding: 8px 14px;
+
+    border-radius: 8px;
+
+    background: #ede7ff;
+    color: #6A0DAD;
+
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.pagina-interna .card-pet .status {
+    width: fit-content;
+    margin: 12px auto 18px;
+    padding: 8px 14px;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+}
+
+/* =========================================================
+   INFORMAÇÕES
+   ========================================================= */
+
+.pagina-interna .info-pet {
+    padding: 0 22px;
+    margin-top: 10px;
+}
+
+.pagina-interna .info-pet p {
+    margin: 12px 0;
+    line-height: 1.5;
+}
+
+.pagina-interna .info-pet strong {
+    color: #6A0DAD;
+}
+
+/* =========================================================
+   AÇÕES
+   ========================================================= */
+
+.pagina-interna .acoes-card {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+
+    padding: 0 18px 22px;
+}
+
+.pagina-interna .acoes-card a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 40px;
+    padding: 9px 14px;
+
+    border-radius: 8px;
+
+    background: #6A0DAD;
+    color: white;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    text-decoration: none;
+
+    transition: .2s;
+}
+
+.pagina-interna .acoes-card a:hover {
+    background: #58108f;
+    transform: translateY(-1px);
+}
+
+.pagina-interna .acoes-card a:nth-child(2) {
+    background: #C62828;
+}
+
+.pagina-interna .acoes-card a:nth-child(2):hover {
+    background: #aa2020;
+}
+
+.pagina-interna .acoes-card a:nth-child(3) {
+    background: #2E7D32;
+}
+
+.pagina-interna .acoes-card a:nth-child(3):hover {
+    background: #256628;
+}
+
+/* =========================================================
+   AVISTAMENTOS
+   ========================================================= */
+
+.pagina-interna .card-avistamento {
+    width: 700px;
+    max-width: 95%;
+
+    margin: 0 auto 25px;
+
+    background: white;
+
+    border-radius: 16px;
+
+    padding: 25px;
+
+    box-shadow: 0 5px 18px rgba(0,0,0,.12);
+
+    text-align: left;
+}
+
+.pagina-interna .cabecalho-avistamento {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.pagina-interna .pet-avistado {
+    margin-bottom: 5px;
+
+    color: #6A0DAD;
+
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.pagina-interna .card-avistamento h2 {
+    margin: 0;
+
+    color: #6A0DAD;
+
+    font-size: 24px;
+}
+
+.pagina-interna .status-avistamento {
+    flex-shrink: 0;
+
+    padding: 8px 12px;
+
+    border-radius: 8px;
+
+    background: #eaf7ec;
+    color: #2E7D32;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.pagina-interna .mensagem-avistamento {
+    margin-top: 22px;
+}
+
+.pagina-interna .mensagem-avistamento p {
+    margin: 10px 0;
+    line-height: 1.6;
+}
+
+.pagina-interna .card-avistamento strong {
+    color: #6A0DAD;
+}
+
+.pagina-interna .informante {
+    margin-top: 15px;
+    padding: 15px;
+
+    background: #f7f7fb;
+
+    border-left: 5px solid #6A0DAD;
+    border-radius: 8px;
+}
+
+.pagina-interna .informante h3 {
+    margin-bottom: 10px;
+
+    color: #6A0DAD;
+    font-size: 18px;
+}
+
+.pagina-interna .informante p {
+    margin: 7px 0;
+}
+
+.pagina-interna .data-postagem {
+    color: #666;
+    font-size: 14px;
+}
+
+/* =========================================================
+   FORMULÁRIO DE NOVA POSTAGEM
+   ========================================================= */
+
+.pagina-interna .formulario-pet {
+    width: min(500px, calc(100% - 30px));
+    max-width: 500px;
+
+    margin: 35px auto 50px;
+
+    padding: 30px;
+
+    background: white;
+
+    border-radius: 15px;
+
+    box-shadow: 0 5px 18px rgba(0,0,0,.10);
+}
+
+.pagina-interna .formulario-pet label {
+    display: block;
+
+    margin-top: 18px;
+    margin-bottom: 6px;
+
+    color: #444;
+
+    font-weight: 600;
+}
+
+.pagina-interna .formulario-pet input,
+.pagina-interna .formulario-pet textarea,
+.pagina-interna .formulario-pet select {
+    width: 100%;
+
+    padding: 13px;
+
+    border: 1px solid #d8d8d8;
+    border-radius: 10px;
+
+    background: white;
+
+    color: #2f2f2f;
+
+    font-family: inherit;
+    font-size: 15px;
+}
+
+.pagina-interna .formulario-pet input:focus,
+.pagina-interna .formulario-pet textarea:focus,
+.pagina-interna .formulario-pet select:focus {
+    outline: none;
+
+    border-color: #6A0DAD;
+
+    box-shadow: 0 0 8px rgba(106,13,173,.18);
+}
+
+.pagina-interna .formulario-pet textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.pagina-interna .formulario-pet input[type="file"] {
+    background: #fafafa;
+    cursor: pointer;
+}
+
+.pagina-interna .formulario-pet .botao-principal {
+    width: 100%;
+
+    margin-top: 25px;
+    padding: 14px;
+
+    border: none;
+    border-radius: 10px;
+
+    background: #6A0DAD;
+    color: white;
+
+    font-size: 16px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: .25s;
+}
+
+.pagina-interna .formulario-pet .botao-principal:hover {
+    background: #58108f;
+    transform: translateY(-2px);
+}
+
+/* =========================================================
+   AVISO VAZIO
+   ========================================================= */
+
+.pagina-interna .aviso-card {
+    width: min(500px, 92%);
+
+    padding: 35px;
+
+    text-align: center;
+}
+
+.pagina-interna .aviso-card h2 {
+    margin-bottom: 15px;
+}
+
+.pagina-interna .aviso-card p,
+.pagina-interna .mensagem-vazia {
+    color: #666;
+    line-height: 1.6;
+}
+
+/* =========================================================
+   RESPONSIVIDADE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .pagina-interna .navbar {
+        padding: 12px 16px;
+    }
+
+    .pagina-interna .navbar-conteudo {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .pagina-interna .navbar h1 {
+        font-size: 26px;
+    }
+
+    .pagina-interna .menu {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .pagina-interna .menu a {
+        min-height: 34px;
+        padding: 7px 9px;
+        font-size: 12px;
+    }
+
+    .pagina-interna > .titulo-pagina,
+    .pagina-interna .cabecalho-avistamentos .titulo-pagina {
+        font-size: 30px;
+        margin-top: 28px;
+    }
+
+    .pagina-interna > .subtitulo,
+    .pagina-interna .cabecalho-avistamentos .subtitulo {
+        font-size: 15px;
+        margin-bottom: 25px;
+    }
+
+    .pagina-interna .submenu-meus-pets {
+        width: 92%;
+    }
+
+    .pagina-interna .submenu-meus-pets a {
+        min-height: 62px;
+        padding: 8px 10px;
+    }
+
+    .pagina-interna .submenu-meus-pets a strong {
+        font-size: 14px;
+    }
+
+    .pagina-interna .submenu-meus-pets a span {
+        font-size: 12px;
+    }
+
+    .pagina-interna .card-pet {
+        width: min(380px, 94%);
+    }
+
+    .pagina-interna .card-avistamento {
+        width: 94%;
+        padding: 20px;
+    }
+
+    .pagina-interna .cabecalho-avistamento {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .pagina-interna .formulario-pet {
+        padding: 22px;
+    }
+}
+
+.pagina-meus-pets .navbar {
+    height: 64px;
+    min-height: 64px;
+    padding: 0 28px;
+    box-sizing: border-box;
+}
+
+.pagina-meus-pets .navbar-conteudo {
+    width: 100%;
+    max-width: 1180px;
+    margin: 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.pagina-meus-pets .navbar h1 {
+    margin: 0;
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
+    font-size: 30px;
+    font-weight: bold;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.pagina-meus-pets .menu {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    flex-wrap: nowrap;
+}
+
+.pagina-meus-pets .menu a {
+    padding: 10px 14px;
+    border-radius: 8px;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+
+    white-space: nowrap;
+}
+
+.pagina-meus-pets .menu a.ativo {
+    background: #ffffff;
+    color: #6A0DAD;
+}
+
+
+/* =========================================================
+   GALERIA DE FOTOS DO PET
+   ========================================================= */
+
+/* Área clicável da foto */
+.pagina-feed .imagem-pet-area {
+    position: relative;
+}
+
+/* Link que cobre a imagem */
+.pagina-feed .imagem-pet-link {
+    position: relative;
+    display: block;
+    width: 100%;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+/* Ícone discreto de galeria */
+.pagina-feed .icone-galeria {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+
+    border-radius: 50%;
+
+    background: rgba(0, 0, 0, 0.58);
+    color: #fff;
+
+    font-size: 20px;
+    line-height: 1;
+
+    box-shadow: 0 2px 7px rgba(0, 0, 0, 0.25);
+
+    pointer-events: none;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+/* Pequeno feedback visual */
+.pagina-feed .imagem-pet-link:hover .icone-galeria {
+    background: rgba(106, 13, 173, 0.88);
+    transform: scale(1.05);
+}
+
+.pagina-feed .imagem-pet-link:hover .imagem-pet {
+    filter: brightness(0.94);
+}
+
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
+.modal-galeria {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 9999;
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 24px;
+
+    box-sizing: border-box;
+
+    background: rgba(0, 0, 0, 0.78);
+
+    backdrop-filter: blur(4px);
+}
+
+/* Quando o JavaScript adiciona .aberto */
+.modal-galeria.aberto {
+    display: flex;
+}
+
+
+/* =========================================================
+   CONTEÚDO DA GALERIA
+   ========================================================= */
+
+.galeria-conteudo {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: min(900px, 94vw);
+    height: min(760px, 90vh);
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   IMAGEM AMPLIADA
+   ========================================================= */
+
+#imagem-galeria {
+    display: block;
+
+    max-width: 100%;
+    max-height: 100%;
+
+    width: auto;
+    height: auto;
+
+    object-fit: contain;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 8px 35px rgba(0, 0, 0, 0.45);
+
+    background: #111;
+}
+
+
+/* =========================================================
+   BOTÃO FECHAR
+   ========================================================= */
+
+.galeria-fechar {
+    position: absolute;
+
+    top: -12px;
+    right: -12px;
+
+    z-index: 3;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 42px;
+    height: 42px;
+
+    padding: 0;
+
+    border: none;
+    border-radius: 50%;
+
+    background: rgba(0, 0, 0, 0.72);
+    color: #fff;
+
+    font-size: 29px;
+    font-weight: 400;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 3px 12px rgba(0, 0, 0, 0.35);
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.galeria-fechar:hover {
+    background: #6A0DAD;
+    transform: scale(1.05);
+}
+
+
+/* =========================================================
+   SETAS
+   ========================================================= */
+
+.galeria-seta {
+    position: absolute;
+
+    top: 50%;
+
+    z-index: 3;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 46px;
+    height: 62px;
+
+    padding: 0;
+
+    border: none;
+    border-radius: 8px;
+
+    transform: translateY(-50%);
+
+    background: rgba(0, 0, 0, 0.52);
+    color: #fff;
+
+    font-size: 42px;
+    font-weight: 300;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.galeria-seta:hover {
+    background: rgba(106, 13, 173, 0.88);
+}
+
+.galeria-esquerda {
+    left: -62px;
+}
+
+.galeria-direita {
+    right: -62px;
+}
+
+
+/* =========================================================
+   CONTADOR
+   ========================================================= */
+
+.contador-galeria {
+    position: absolute;
+
+    left: 50%;
+    bottom: -34px;
+
+    transform: translateX(-50%);
+
+    padding: 5px 10px;
+
+    border-radius: 14px;
+
+    background: rgba(0, 0, 0, 0.68);
+    color: #fff;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   RESPONSIVO
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .modal-galeria {
+        padding: 15px;
+    }
+
+    .galeria-conteudo {
+        width: 96vw;
+        height: 82vh;
+    }
+
+    .galeria-fechar {
+        top: -8px;
+        right: -4px;
+
+        width: 38px;
+        height: 38px;
+
+        font-size: 26px;
+    }
+
+    .galeria-seta {
+        width: 38px;
+        height: 52px;
+
+        font-size: 34px;
+    }
+
+    .galeria-esquerda {
+        left: 4px;
+    }
+
+    .galeria-direita {
+        right: 4px;
+    }
+
+    .contador-galeria {
+        bottom: -30px;
+    }
+
+    .pagina-feed .icone-galeria {
+        right: 9px;
+        bottom: 9px;
+
+        width: 32px;
+        height: 32px;
+
+        font-size: 18px;
+    }
+}
+
+/* =========================================================
+   BINGOLÚ — ACABAMENTO VISUAL DO FEED
+   Apenas aparência.
+   Não altera funcionamento, rotas ou filtros.
+   ========================================================= */
+
+   .pagina-feed {
+    background: #f1efe3;
+    color: #333;
+}
+
+
+/* =========================================================
+   ÁREA PRINCIPAL
+   ========================================================= */
+
+.pagina-feed .feed-principal {
+    width: min(1180px, calc(100% - 30px));
+    margin: 0 auto;
+    padding: 25px 0 40px;
+}
+
+
+/* =========================================================
+   CABEÇALHO
+   ========================================================= */
+
+.pagina-feed .cabecalho-feed {
+    text-align: center;
+    margin: 18px auto 22px;
+    padding: 20px 18px;
+
+    background: rgba(255, 255, 255, 0.82);
+
+    border-radius: 16px;
+
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
+}
+
+.pagina-feed .cabecalho-feed h1 {
+    margin: 0 0 7px;
+
+    color: #6A0DAD;
+
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.pagina-feed .cabecalho-feed p {
+    margin: 0;
+
+    color: #6d6d6d;
+
+    font-size: 15px;
+}
+
+
+/* =========================================================
+   ABAS PRINCIPAIS
+   ========================================================= */
+
+.pagina-feed .feed-abas {
+    width: min(820px, 100%);
+    margin: 0 auto 18px;
+
+    display: flex;
+    gap: 8px;
+
+    padding: 6px;
+
+    background: #ffffff;
+
+    border-radius: 14px;
+
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.07);
+}
+
+.pagina-feed .feed-aba {
+    flex: 1;
+
+    padding: 11px 16px;
+
+    border-radius: 10px;
+
+    color: #666;
+
+    text-align: center;
+    text-decoration: none;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    transition: .2s ease;
+}
+
+.pagina-feed .feed-aba:hover {
+    color: #6A0DAD;
+    background: #f4eef9;
+}
+
+.pagina-feed .feed-aba.ativa {
+    background: #6A0DAD;
+    color: #ffffff;
+
+    box-shadow: 0 3px 8px rgba(106, 13, 173, 0.22);
+}
+
+
+/* =========================================================
+   FILTROS DE ESPÉCIE
+   ========================================================= */
+
+.pagina-feed .filtros-opcoes {
+    width: min(1000px, 100%);
+
+    margin: 0 auto 22px;
+
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.pagina-feed .filtros-opcoes a {
+    padding: 8px 15px;
+
+    border: 1px solid #d8cce1;
+    border-radius: 20px;
+
+    background: #ffffff;
+
+    color: #5a189a;
+
+    text-decoration: none;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    transition: .2s ease;
+}
+
+.pagina-feed .filtros-opcoes a:hover {
+    background: #f3eafa;
+
+    transform: translateY(-1px);
+}
+
+.pagina-feed .filtros-opcoes a.ativo {
+    background: #5a189a;
+    border-color: #5a189a;
+
+    color: #ffffff;
+
+    box-shadow: 0 3px 8px rgba(90, 24, 154, 0.18);
+}
+
+
+/* =========================================================
+   GRADE DOS CARDS
+   ========================================================= */
+
+.pagina-feed .feed-container {
+    width: 100%;
+    max-width: 1180px;
+
+    margin: 0 auto;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(290px, 360px));
+
+    justify-content: center;
+
+    gap: 22px;
+}
+
+
+/* =========================================================
+   CARD
+   ========================================================= */
+
+.pagina-feed .card-pet {
+    width: 100%;
+    max-width: 360px;
+
+    margin: 0;
+
+    overflow: hidden;
+
+    background: #ffffff;
+
+    border-radius: 16px;
+
+    box-shadow:
+        0 5px 18px rgba(0, 0, 0, 0.09);
+
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease;
+}
+
+.pagina-feed .card-pet:hover {
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 9px 24px rgba(0, 0, 0, 0.13);
+}
+
+
+/* =========================================================
+   ÁREA DA FOTO
+   Corrige o fato de a imagem estar dentro da galeria.
+   ========================================================= */
+
+.pagina-feed .bingolu-galeria-area {
+    position: relative;
+
+    width: 100%;
+
+    overflow: hidden;
+
+    background: #e9e7e9;
+}
+
+.pagina-feed .bingolu-galeria-area img {
+    display: block;
+
+    width: 100%;
+    height: 235px;
+
+    object-fit: cover;
+    object-position: center;
+
+    transition: transform .25s ease,
+                filter .25s ease;
+}
+
+.pagina-feed .card-pet:hover
+.bingolu-galeria-area img {
+    transform: scale(1.015);
+}
+
+
+/* =========================================================
+   BOTÃO DA GALERIA
+   ========================================================= */
+
+.pagina-feed .bingolu-icone-galeria {
+    position: absolute;
+
+    top: 12px;
+    right: 12px;
+
+    z-index: 5;
+
+    width: 38px;
+    height: 38px;
+
+    margin: 0;
+    padding: 0;
+
+    border: none;
+    border-radius: 50%;
+
+    background: rgba(0, 0, 0, 0.60);
+
+    color: #ffffff;
+
+    font-size: 19px;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow:
+        0 2px 7px rgba(0, 0, 0, 0.22);
+
+    transition:
+        background .2s ease,
+        transform .2s ease;
+}
+
+.pagina-feed .bingolu-icone-galeria:hover {
+    background: #6A0DAD;
+
+    transform: scale(1.06);
+}
+
+
+/* =========================================================
+   CONTEÚDO DO CARD
+   ========================================================= */
+
+.pagina-feed .card-pet .conteudo {
+    padding: 15px 17px 17px;
+}
+
+.pagina-feed .card-pet .conteudo h2 {
+    margin: 0 0 8px;
+
+    color: #5a189a;
+
+    font-size: 23px;
+    line-height: 1.2;
+}
+
+.pagina-feed .card-pet .info-pet {
+    padding: 0;
+    margin: 0;
+}
+
+.pagina-feed .card-pet .info-pet p {
+    margin: 7px 0;
+
+    color: #4d4d4d;
+
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.pagina-feed .card-pet .info-pet strong {
+    color: #51495a;
+}
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.pagina-feed .card-pet .status {
+    display: inline-block;
+
+    margin: 0 0 10px;
+
+    padding: 5px 10px;
+
+    border-radius: 20px;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.pagina-feed .card-pet .status.perdido {
+    background: #fff0f0;
+    color: #c62828;
+}
+
+.pagina-feed .card-pet .status.meu-anuncio {
+    background: #f0eafa;
+    color: #5a189a;
+}
+
+
+/* =========================================================
+   DISTÂNCIA
+   ========================================================= */
+
+.pagina-feed .card-pet .info-pet p:nth-of-type(6) {
+    display: inline-block;
+
+    margin-top: 9px;
+    padding: 5px 9px;
+
+    border-radius: 8px;
+
+    background: #f3eff8;
+
+    color: #5a189a;
+}
+
+
+/* =========================================================
+   BOTÃO DE AVISTAMENTO
+   ========================================================= */
+
+.pagina-feed .card-pet .acoes {
+    margin-top: 13px;
+}
+
+.pagina-feed .card-pet .botao-roxo {
+    display: block;
+
+    width: 100%;
+
+    padding: 10px;
+
+    border-radius: 9px;
+
+    background: #6A0DAD;
+
+    color: #ffffff;
+
+    text-align: center;
+    text-decoration: none;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    transition: .2s ease;
+}
+
+.pagina-feed .card-pet .botao-roxo:hover {
+    background: #580b91;
+}
+
+
+/* =========================================================
+   ALERTA PRÓXIMO
+   ========================================================= */
+
+.pagina-feed .card-pet.card-alerta-urgente {
+    border: 2px solid #e53935 !important;
+
+    box-shadow:
+        0 5px 18px rgba(229, 57, 53, 0.16) !important;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .pagina-feed .feed-principal {
+        width: calc(100% - 18px);
+
+        padding-top: 14px;
+    }
+
+    .pagina-feed .cabecalho-feed {
+        padding: 17px 13px;
+
+        margin-bottom: 14px;
+    }
+
+    .pagina-feed .cabecalho-feed h1 {
+        font-size: 26px;
+    }
+
+    .pagina-feed .cabecalho-feed p {
+        font-size: 14px;
+    }
+
+    .pagina-feed .feed-abas {
+        width: 100%;
+
+        gap: 5px;
+
+        padding: 5px;
+    }
+
+    .pagina-feed .feed-aba {
+        padding: 9px 5px;
+
+        font-size: 12px;
+    }
+
+    .pagina-feed .filtros-opcoes {
+        gap: 6px;
+
+        margin-bottom: 17px;
+    }
+
+    .pagina-feed .filtros-opcoes a {
+        padding: 7px 11px;
+
+        font-size: 12px;
+    }
+
+    .pagina-feed .feed-container {
+        grid-template-columns: 1fr;
+
+        gap: 15px;
+    }
+
+    .pagina-feed .card-pet {
+        max-width: none;
+    }
+
+    .pagina-feed .bingolu-galeria-area img {
+        height: auto;
+
+        aspect-ratio: 4 / 3;
+
+        max-height: 320px;
+    }
+
 }

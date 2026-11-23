@@ -1,261 +1,603 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="pt-BR">
 <head>
-
     <meta charset="UTF-8">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meus Pets - BingoLú</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-    <link rel="stylesheet"
-    href="{{ url_for('static', filename='style.css') }}">
+<style>
+.bingolu-galeria-area {
+    position: relative;
+}
+
+.bingolu-icone-galeria {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    z-index: 3;
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0,0,0,.58);
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bingolu-icone-galeria:hover {
+    background: rgba(0,0,0,.75);
+}
+
+.bingolu-modal-galeria {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0,0,0,.78);
+    backdrop-filter: blur(5px);
+    align-items: center;
+    justify-content: center;
+    padding: 25px;
+}
+
+.bingolu-modal-galeria.aberto {
+    display: flex;
+}
+
+.bingolu-modal-conteudo {
+    position: relative;
+    width: min(900px, 92vw);
+    max-height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bingolu-modal-imagem {
+    max-width: 100%;
+    max-height: 82vh;
+    object-fit: contain;
+    border-radius: 10px;
+    background: #111;
+}
+
+.bingolu-fechar {
+    position: absolute;
+    right: -4px;
+    top: -46px;
+    border: 0;
+    background: transparent;
+    color: white;
+    font-size: 34px;
+    cursor: pointer;
+}
+
+.bingolu-seta {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0,0,0,.58);
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+.bingolu-seta.esquerda {
+    left: 12px;
+}
+
+.bingolu-seta.direita {
+    right: 12px;
+}
+
+.bingolu-contador {
+    position: absolute;
+    left: 50%;
+    bottom: -34px;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 14px;
+}
+</style>
 
 </head>
 
-
 <body>
 
-
 <div class="navbar">
-
-    <h1>
-        BingoLú pets
-    </h1>
+    <h1>BingoLú Pets</h1>
 
     <div class="menu">
-
-        <a href="/feed">
-            Feed
-        </a>
-
-        <a href="/meus_posts" class="ativo">
-            Meus Pets
-        </a>
-
-        <a href="/meus_avistamentos">
-            Avistamentos
-        </a>
-
-        <a href="/post_pet">
-            Nova Postagem
-        </a>
-
-        <a href="/logout">
-            Sair
-        </a>
-
+        <a href="/feed">Feed</a>
+        <a href="/meus_posts" class="ativo">Meus Pets</a>
+        <a href="/meus_avistamentos">Avistamentos</a>
+        <a href="/encontrados">Encontrados</a>
+        <a href="/post_pet">Nova Postagem</a>
+        <a href="/logout">Sair</a>
     </div>
-
 </div>
 
-
-
-<h2 class="titulo-pagina">
-
-    Meus Pets
-
-</h2>
-
-
+<h2 class="titulo-pagina">Meus Pets</h2>
 
 <p class="subtitulo">
-
-    Gerencie seus anúncios.
-
+    Gerencie os anúncios de animais cadastrados por você.
 </p>
-
-
-
-<div class="submenu-meus-pets">
-
-    <a
-    href="/meus_posts"
-    class="submenu-ativo">
-
-        Meus Anúncios
-
-    </a>
-
-
-    <a
-    href="/encontrados">
-
-        Acessar Histórico de Encontrados
-
-    </a>
-
-</div>
-
-
 
 <div class="feed-container">
 
-
 {% if pets %}
 
+    {% for pet in pets %}
 
-{% for pet in pets %}
+    <article class="card-pet">
+
+        <div class="bingolu-galeria-area">
+
+            <button
+                type="button"
+                class="bingolu-icone-galeria"
+                title="Ver fotos"
+                data-abrir-galeria="{{ pet[0] }}"
+            >
+                ▧
+            </button>
+
+            <img
+                src="{{ url_for('static', filename='uploads/' + pet[5]) }}"
+                alt="Foto de {{ pet[1] }}"
+                data-principal="{{ pet[5] }}"
+            >
+
+        </div>
+
+        <div class="conteudo">
+
+            <h2>{{ pet[1] }}</h2>
+
+            <div class="status perdido">
+                Perdido
+            </div>
+
+            <div class="info-pet">
+
+                <p>
+                    <strong>Cidade:</strong>
+                    {{ pet[3] }}
+                </p>
+
+                <p>
+                    <strong>Descrição:</strong>
+                    {{ pet[2] }}
+                </p>
+
+                <p>
+                    <strong>Contato:</strong>
+                    {{ pet[4] }}
+                </p>
+
+            </div>
+
+            <div class="acoes">
+
+                <a
+                    href="/editar_post/{{ pet[0] }}"
+                    class="botao-roxo"
+                >
+                    Editar
+                </a>
+
+                <a
+                    href="/marcar_encontrado/{{ pet[0] }}"
+                    class="botao-verde"
+                >
+                    Marcar como encontrado
+                </a>
+
+                <a
+                    href="/excluir_post/{{ pet[0] }}"
+                    class="botao-vermelho"
+                    onclick="return confirm('Deseja realmente excluir este anúncio?');"
+                >
+                    Excluir
+                </a>
+
+            </div>
+
+            <div class="data-postagem">
+                Publicado em {{ pet[6] }}
+            </div>
+
+        </div>
+
+    </article>
 
 
-<div class="card-pet">
+    <div
+        id="modal-galeria-{{ pet[0] }}"
+        class="bingolu-modal-galeria"
+        data-pet-id="{{ pet[0] }}"
+    >
 
+        <div class="bingolu-modal-conteudo">
 
-    <img
-    src="{{ url_for('static',
-    filename='uploads/' + pet[5]) }}">
+            <button
+                type="button"
+                class="bingolu-fechar"
+                data-fechar-galeria="{{ pet[0] }}"
+            >
+                ×
+            </button>
 
+            <button
+                type="button"
+                class="bingolu-seta esquerda"
+                data-mudar-galeria="{{ pet[0] }}"
+                data-direcao="-1"
+            >
+                ‹
+            </button>
 
+            <img
+                id="imagem-galeria-{{ pet[0] }}"
+                class="bingolu-modal-imagem"
+                data-principal="{{ pet[5] }}"
+                src="{{ url_for('static', filename='uploads/' + pet[5]) }}"
+                alt="Galeria de {{ pet[1] }}"
+            >
 
-    <h2>
+            <button
+                type="button"
+                class="bingolu-seta direita"
+                data-mudar-galeria="{{ pet[0] }}"
+                data-direcao="1"
+            >
+                ›
+            </button>
 
-        {{ pet[1] }}
+            <div
+                id="contador-galeria-{{ pet[0] }}"
+                class="bingolu-contador"
+            >
+                1/1
+            </div>
 
-    </h2>
-
-
-
-    <span class="meu-anuncio">
-
-        MEU ANÚNCIO
-
-    </span>
-
-
-
-    <div class="info-pet">
-
-
-        <p>
-            <strong>Descrição</strong>
-        </p>
-
-
-        <p>
-            {{ pet[2] }}
-        </p>
-
-
-
-        <p>
-            <strong>Cidade</strong>
-        </p>
-
-
-        <p>
-            {{ pet[3] }}
-        </p>
-
-
-
-        <p>
-            <strong>Contato</strong>
-        </p>
-
-
-        <p>
-            {{ pet[4] }}
-        </p>
-
-
-
-        <p class="data-postagem">
-            <strong>Publicado em</strong>
-        </p>
-
-
-        <p>
-            {{ pet[6] }}
-        </p>
-
+        </div>
 
     </div>
 
-
-
-    <p class="status perdido">
-
-        {{ pet[7] }}
-
-    </p>
-
-
-
-    <hr>
-
-
-
-    <div class="acoes-card">
-
-
-        <a href="/editar_post/{{ pet[0] }}">
-
-            Editar
-
-        </a>
-
-
-
-        <a
-        href="/excluir_post/{{ pet[0] }}"
-        onclick="return confirm('Deseja excluir esta postagem?')">
-
-            Excluir
-
-        </a>
-
-
-
-        <a
-        href="/marcar_encontrado/{{ pet[0] }}">
-
-            Marcar como Encontrado
-
-        </a>
-
-
-    </div>
-
-
-</div>
-
-
-{% endfor %}
-
-
+    {% endfor %}
 
 {% else %}
 
+    <div class="vazio">
 
+        <h2>
+            Você ainda não possui anúncios
+        </h2>
 
-<div class="card-pet aviso-card">
+        <p>
+            Cadastre um animal perdido para começar.
+        </p>
 
-
-    <h2>
-
-        Você ainda não possui anúncios.
-
-    </h2>
-
-
-    <p>
-
-        Clique em <strong>Nova Postagem</strong>
-        para cadastrar seu primeiro pet.
-
-    </p>
-
-
-</div>
-
-
+    </div>
 
 {% endif %}
 
-
 </div>
 
 
+<script>
+
+window.bingoluGalerias = {};
+
+
+function abrirGaleria(idPet) {
+
+    const modal = document.getElementById(
+        'modal-galeria-' + idPet
+    );
+
+    const imagem = document.getElementById(
+        'imagem-galeria-' + idPet
+    );
+
+    if (!modal || !imagem) {
+        return;
+    }
+
+    modal.classList.add('aberto');
+
+    fetch('/fotos_pet/' + idPet)
+
+        .then(response => {
+
+            if (!response.ok) {
+                throw new Error(
+                    'Falha ao carregar fotos'
+                );
+            }
+
+            return response.json();
+
+        })
+
+        .then(dados => {
+
+            const fotos =
+                dados &&
+                Array.isArray(dados.fotos)
+                    ? dados.fotos
+                    : [];
+
+            window.bingoluGalerias[idPet] = {
+
+                fotos:
+                    fotos.length > 0
+                        ? fotos
+                        : [imagem.dataset.principal],
+
+                indice: 0
+
+            };
+
+            atualizarGaleria(idPet);
+
+        })
+
+        .catch(() => {
+
+            window.bingoluGalerias[idPet] = {
+
+                fotos: [
+                    imagem.dataset.principal
+                ],
+
+                indice: 0
+
+            };
+
+            atualizarGaleria(idPet);
+
+        });
+
+}
+
+
+function atualizarGaleria(idPet) {
+
+    const dados =
+        window.bingoluGalerias[idPet];
+
+    if (!dados || !dados.fotos.length) {
+        return;
+    }
+
+    const imagem =
+        document.getElementById(
+            'imagem-galeria-' + idPet
+        );
+
+    const contador =
+        document.getElementById(
+            'contador-galeria-' + idPet
+        );
+
+    if (!imagem || !contador) {
+        return;
+    }
+
+    imagem.src =
+        dados.fotos[dados.indice];
+
+    contador.textContent =
+        (dados.indice + 1) +
+        '/' +
+        dados.fotos.length;
+
+}
+
+
+function mudarFotoGaleria(
+    idPet,
+    direcao
+) {
+
+    const dados =
+        window.bingoluGalerias[idPet];
+
+    if (
+        !dados ||
+        dados.fotos.length <= 1
+    ) {
+        return;
+    }
+
+    dados.indice =
+        (
+            dados.indice +
+            direcao +
+            dados.fotos.length
+        ) %
+        dados.fotos.length;
+
+    atualizarGaleria(idPet);
+
+}
+
+
+function fecharGaleria(idPet) {
+
+    const modal =
+        document.getElementById(
+            'modal-galeria-' + idPet
+        );
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.remove('aberto');
+
+}
+
+
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
+
+        document
+            .querySelectorAll(
+                '[data-abrir-galeria]'
+            )
+            .forEach(botao => {
+
+                botao.addEventListener(
+                    'click',
+                    function () {
+
+                        const idPet =
+                            this.dataset.abrirGaleria;
+
+                        abrirGaleria(idPet);
+
+                    }
+                );
+
+            });
+
+
+        document
+            .querySelectorAll(
+                '[data-fechar-galeria]'
+            )
+            .forEach(botao => {
+
+                botao.addEventListener(
+                    'click',
+                    function () {
+
+                        const idPet =
+                            this.dataset.fecharGaleria;
+
+                        fecharGaleria(idPet);
+
+                    }
+                );
+
+            });
+
+
+        document
+            .querySelectorAll(
+                '[data-mudar-galeria]'
+            )
+            .forEach(botao => {
+
+                botao.addEventListener(
+                    'click',
+                    function () {
+
+                        const idPet =
+                            this.dataset.mudarGaleria;
+
+                        const direcao =
+                            Number(
+                                this.dataset.direcao
+                            );
+
+                        mudarFotoGaleria(
+                            idPet,
+                            direcao
+                        );
+
+                    }
+                );
+
+            });
+
+
+        document
+            .querySelectorAll(
+                '.bingolu-modal-galeria'
+            )
+            .forEach(modal => {
+
+                modal.addEventListener(
+                    'click',
+                    function (event) {
+
+                        if (
+                            event.target === this
+                        ) {
+
+                            fecharGaleria(
+                                this.dataset.petId
+                            );
+
+                        }
+
+                    }
+                );
+
+            });
+
+    }
+);
+
+
+document.addEventListener(
+    'keydown',
+    function (event) {
+
+        const modal =
+            document.querySelector(
+                '.bingolu-modal-galeria.aberto'
+            );
+
+        if (!modal) {
+            return;
+        }
+
+        const idPet =
+            modal.dataset.petId;
+
+        if (event.key === 'Escape') {
+
+            fecharGaleria(idPet);
+
+        }
+
+        if (event.key === 'ArrowLeft') {
+
+            mudarFotoGaleria(
+                idPet,
+                -1
+            );
+
+        }
+
+        if (event.key === 'ArrowRight') {
+
+            mudarFotoGaleria(
+                idPet,
+                1
+            );
+
+        }
+
+    }
+);
+
+</script>
 
 </body>
-
 </html>

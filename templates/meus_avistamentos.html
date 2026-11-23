@@ -1,54 +1,58 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 
 <head>
 
     <meta charset="UTF-8">
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Central de Avistamentos - BingoLú</title>
 
     <link rel="stylesheet"
-    href="{{ url_for('static', filename='style.css') }}">
+          href="{{ url_for('static', filename='style.css') }}">
 
 </head>
 
+<body class="pagina-interna pagina-avistamentos">
 
-<body>
+<nav class="navbar">
 
+    <div class="navbar-conteudo">
 
-<div class="navbar">
+        <h1>BingoLú Pets</h1>
 
-    <h1>
-        BingoLú Pets
-    </h1>
+        <div class="menu">
 
-    <div class="menu">
+            <a href="/feed">
+                Feed
+            </a>
 
-        <a href="/feed">
-            Feed
-        </a>
+            <a href="/meus_posts">
+                Meus Pets
+            </a>
 
-        <a href="/meus_posts">
-            Meus Pets
-        </a>
+            <a href="/meus_avistamentos" class="ativo">
+                Avistamentos
+            </a>
 
-        <a href="/meus_avistamentos" class="ativo">
-            Avistamentos
-        </a>
+            <a href="/encontrados">
+                Encontrados
+            </a>
 
-        <a href="/post_pet">
-            Nova Postagem
-        </a>
+            <a href="/post_pet">
+                Nova Postagem
+            </a>
 
-        <a href="/logout">
-            Sair
-        </a>
+            <a href="/logout">
+                Sair
+            </a>
+
+        </div>
 
     </div>
 
-</div>
-
-
+</nav>
 
 <div class="cabecalho-avistamentos">
 
@@ -57,197 +61,144 @@
     </h2>
 
     <p class="subtitulo">
-
-        Aqui você recebe informações enviadas pela
-        comunidade sobre os animais cadastrados por você.
-
+        Aqui você recebe informações enviadas pela comunidade
+        sobre os animais cadastrados por você.
     </p>
 
 </div>
-
-
 
 <div class="feed-container">
 
-
 {% if avistamentos %}
 
+    {% for aviso in avistamentos %}
 
-{% for aviso in avistamentos %}
+    <div class="card-avistamento">
 
+        <div class="cabecalho-avistamento">
 
-<div class="card-avistamento">
+            <div>
 
+                <p class="pet-avistado">
+                    PET: {{ aviso[0] }}
+                </p>
 
-    <div class="cabecalho-avistamento">
+                <h2>
+                    Novo avistamento recebido
+                </h2>
 
+            </div>
 
-        <div>
-
-            <p class="pet-avistado">
-
-                PET: {{ aviso[0] }}
-
-            </p>
-
-            <h2>
-
-                Novo avistamento recebido
-
-            </h2>
+            <span class="status-avistamento">
+                RECEBIDO
+            </span>
 
         </div>
 
+        <div class="mensagem-avistamento">
 
-        <span class="status-avistamento">
+            <p>
+                Um membro da comunidade informou ter visto
+                <strong>{{ aviso[0] }}</strong>.
+            </p>
 
-            RECEBIDO
+            <p>
+                <strong>📍 Local informado</strong>
+            </p>
 
-        </span>
+            <p>
+                {{ aviso[1] }}
+            </p>
 
+            <p>
+                <strong>💬 Observação</strong>
+            </p>
+
+            <p>
+                {{ aviso[2] }}
+            </p>
+
+        </div>
+
+        <hr>
+
+        <div class="informante">
+
+            <h3>
+                Pessoa que realizou o avistamento
+            </h3>
+
+            <p>
+                <strong>Nome:</strong>
+                {{ aviso[4] }}
+            </p>
+
+            <p>
+                <strong>Telefone:</strong>
+                <span class="telefone-mascara">
+                    {{ aviso[5] }}
+                </span>
+            </p>
+
+            <p>
+                <strong>E-mail:</strong>
+                {{ aviso[6] }}
+            </p>
+
+        </div>
+
+        <p class="data-postagem">
+            Avistamento recebido em {{ aviso[3] }}
+        </p>
 
     </div>
 
-
-
-    <div class="mensagem-avistamento">
-
-
-        <p>
-
-            Um membro da comunidade informou ter visto
-            <strong>{{ aviso[0] }}</strong>.
-
-        </p>
-
-
-        <p>
-
-            <strong>📍 Local informado</strong>
-
-        </p>
-
-        <p>
-
-            {{ aviso[1] }}
-
-        </p>
-
-
-        <p>
-
-            <strong>💬 Observação</strong>
-
-        </p>
-
-        <p>
-
-            {{ aviso[2] }}
-
-        </p>
-
-
-    </div>
-
-
-
-    <hr>
-
-
-
-    <div class="informante">
-
-
-        <h3>
-
-            Pessoa que realizou o avistamento
-
-        </h3>
-
-
-        <p>
-
-            <strong>Nome:</strong>
-            {{ aviso[4] }}
-
-        </p>
-
-
-        <p>
-
-            <strong>Telefone:</strong>
-            <span class="telefone-mascara">{{ aviso[5] }}</span>
-
-        </p>
-
-
-        <p>
-
-            <strong>E-mail:</strong>
-            {{ aviso[6] }}
-
-        </p>
-
-
-    </div>
-
-
-
-    <p class="data-postagem">
-
-        Avistamento recebido em {{ aviso[3] }}
-
-    </p>
-
-
-</div>
-
-
-{% endfor %}
-
-
+    {% endfor %}
 
 {% else %}
 
+    <div class="card-pet aviso-card aviso-vazio">
 
-<div class="card-pet aviso-vazio">
+        <h2>
+            Nenhum avistamento recebido
+        </h2>
 
+        <p>
+            Quando alguém informar ter visto um dos seus pets,
+            o aviso aparecerá nesta central.
+        </p>
 
-    <h2>
-
-        Nenhum avistamento recebido
-
-    </h2>
-
-
-    <p>
-
-        Quando alguém informar ter visto um dos seus pets,
-        o aviso aparecerá nesta central.
-
-    </p>
-
-
-</div>
-
+    </div>
 
 {% endif %}
 
-
 </div>
 
-<!-- JavaScript para garantir que telefones antigos do banco que venham sem formatação sejam formatados dinamicamente na tela -->
 <script>
+
     document.querySelectorAll('.telefone-mascara').forEach(function(el) {
+
         let texto = el.textContent.replace(/\D/g, '');
+
         if (texto.length === 11) {
-            el.textContent = '(' + texto.substring(0,2) + ') ' + texto.substring(2,7) + '-' + texto.substring(7);
+
+            el.textContent =
+                '(' + texto.substring(0,2) + ') ' +
+                texto.substring(2,7) + '-' +
+                texto.substring(7);
+
         } else if (texto.length === 10) {
-            el.textContent = '(' + texto.substring(0,2) + ') ' + texto.substring(2,6) + '-' + texto.substring(6);
+
+            el.textContent =
+                '(' + texto.substring(0,2) + ') ' +
+                texto.substring(2,6) + '-' +
+                texto.substring(6);
+
         }
+
     });
+
 </script>
 
 </body>
-
 </html>

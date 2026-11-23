@@ -1,118 +1,1056 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
-    <!-- Adicionado para permitir o teste da simulação mobile no notebook com F12 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Nova Postagem - BingoLú</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+    <style>
+        /* =====================================================
+           ÁREA DE FOTOS
+           ===================================================== */
+
+        .fotos-descricao {
+            margin-top: -8px;
+            margin-bottom: 16px;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .fotos-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-top: 8px;
+        }
+
+        .foto-item {
+            min-width: 0;
+            text-align: center;
+        }
+
+        .foto-input {
+            display: none;
+        }
+
+        .foto-caixa {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            min-height: 105px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border: 2px dashed #c7c7c7;
+            border-radius: 12px;
+
+            background: #fafafa;
+            color: #777;
+
+            cursor: pointer;
+            overflow: hidden;
+
+            transition:
+                border-color .2s,
+                background .2s,
+                transform .2s;
+        }
+
+        .foto-caixa:hover {
+            border-color: #6A0DAD;
+            background: #f8f3fc;
+            transform: translateY(-2px);
+        }
+
+        .foto-caixa.principal {
+            border-color: #6A0DAD;
+            background: #faf7fd;
+        }
+
+        .texto-foto {
+            padding: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1.3;
+            text-align: center;
+        }
+
+        .texto-foto .icone {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 24px;
+            color: #6A0DAD;
+        }
+
+        .preview-foto {
+            display: none;
+
+            width: 100%;
+            height: 100%;
+
+            object-fit: cover;
+        }
+
+        .foto-legenda {
+            margin: 6px 0 0;
+            color: #666;
+            font-size: 12px;
+            line-height: 1.3;
+        }
+
+        .foto-legenda.principal {
+            color: #6A0DAD;
+            font-weight: 600;
+        }
+
+        .mensagem-fotos {
+            display: none;
+
+            margin-top: 12px;
+            padding: 10px 12px;
+
+            border-radius: 8px;
+
+            background: #fdeaea;
+            color: #C62828;
+
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        /* =====================================================
+           BOTÃO DE PUBLICAÇÃO
+           ===================================================== */
+
+        .botao-publicar {
+            width: 100%;
+            margin-top: 25px;
+            padding: 14px;
+
+            border: none;
+            border-radius: 10px;
+
+            background: #6A0DAD;
+            color: white;
+
+            font-size: 16px;
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition:
+                background .25s,
+                transform .25s;
+        }
+
+        .botao-publicar:hover {
+            background: #58108f;
+            transform: translateY(-2px);
+        }
+
+        .botao-publicar:active {
+            transform: scale(.98);
+        }
+
+        /* =====================================================
+           CAMPO SOMENTE LEITURA
+           ===================================================== */
+
+        .campo-bloqueado {
+            background: #f1f2f6 !important;
+            color: #666 !important;
+            cursor: not-allowed;
+        }
+
+        /* =====================================================
+           RESPONSIVIDADE DA GALERIA
+           ===================================================== */
+
+        @media (max-width: 520px) {
+
+            .fotos-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .foto-caixa {
+                min-height: 120px;
+            }
+        }
+    </style>
 </head>
-<body>
 
-<div class="navbar">
-    <h1>BingoLú Pets</h1>
-    <div class="menu">
-        <a href="/feed">Feed</a>
-        <a href="/meus_posts">Meus Pets</a>
-        <a href="/meus_avistamentos">Avistamentos</a>
-        <a href="/post_pet" class="ativo">Nova Postagem</a>
-        <a href="/logout">Sair</a>
-    </div>
-</div>
 
-<h2 class="titulo-pagina">Cadastrar Animal Perdido</h2>
-<p class="subtitulo">Informe os dados abaixo para que outras pessoas possam ajudá-lo a localizar seu pet.</p>
+<body class="pagina-interna">
 
-<form method="POST" enctype="multipart/form-data" class="formulario-pet">
+    <!-- =====================================================
+         NAVBAR
+         ===================================================== -->
 
-    <label>Nome do animal</label>
-    <input type="text" name="nome" required>
+    <nav class="navbar">
 
-    <!-- Nova Funcionalidade: Espécie -->
-    <label>Espécie</label>
-    <select name="especie" id="especie" required style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #ccc;">
-        <option value="" disabled selected>Selecione a espécie</option>
-        <option value="Canino">Canino</option>
-        <option value="Felino">Felino</option>
-        <option value="Réptil">Réptil</option>
-        <option value="Roedor">Roedor</option>
-        <option value="Anfíbio">Anfíbio</option>
-        <option value="Ave">Ave</option>
-    </select>
+        <div class="navbar-conteudo">
 
-    <!-- Nova Funcionalidade Condicional: Porte (Inicia escondido via CSS) -->
-    <div id="campo-porte" style="display: none;">
-        <label>Porte do Cão</label>
-        <select name="porte" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #ccc;">
-            <option value="" disabled selected>Selecione o porte</option>
-            
-            <option value="Pequeno">Pequeno</option>
-            <option value="Médio">Médio</option>
-            <option value="Grande">Grande</option>
-            
+            <h1>BingoLú</h1>
+
+            <div class="menu">
+
+                <a href="/feed">
+                    Feed
+                </a>
+
+                <a href="/meus_posts">
+                    Meus Pets
+                </a>
+
+                <a href="/meus_avistamentos">
+                    Avistamentos
+                </a>
+
+                <a href="/encontrados">
+                    Encontrados
+                </a>
+
+                <a
+                    href="/post_pet"
+                    class="ativo"
+                >
+                    Nova Postagem
+                </a>
+
+                <a href="/logout">
+                    Sair
+                </a>
+
+            </div>
+
+        </div>
+
+    </nav>
+
+
+    <!-- =====================================================
+         CABEÇALHO
+         ===================================================== -->
+
+    <h2 class="titulo-pagina">
+        Cadastrar Animal Perdido
+    </h2>
+
+    <p class="subtitulo">
+        Informe os dados abaixo para que outras pessoas possam
+        ajudá-lo a localizar seu pet.
+    </p>
+
+
+    <!-- =====================================================
+         FORMULÁRIO
+         ===================================================== -->
+
+    <form
+        method="POST"
+        enctype="multipart/form-data"
+        class="formulario-pet"
+    >
+
+        <!-- DONO -->
+
+        <label for="nome_dono">
+            Nome do dono / responsável
+        </label>
+
+        <input
+            type="text"
+            id="nome_dono"
+            name="nome_dono"
+            value="{{ session['usuario_nome'] }}"
+            readonly
+            class="campo-bloqueado"
+        >
+
+
+        <!-- NOME -->
+
+        <label for="nome">
+            Nome do animal
+        </label>
+
+        <input
+            type="text"
+            id="nome"
+            name="nome"
+            required
+            autocomplete="off"
+        >
+
+
+        <!-- ANIMAL -->
+
+        <label for="especie">
+            Qual é o animal?
+        </label>
+
+        <select
+            name="especie"
+            id="especie"
+            required
+        >
+            <option
+                value=""
+                disabled
+                selected
+            >
+                Selecione o animal
+            </option>
+
+            <option value="Canino">
+                Cães
+            </option>
+
+            <option value="Felino">
+                Gatos
+            </option>
+
+            <option value="Ave">
+                Aves
+            </option>
+
+            <option value="Outro">
+                Outros
+            </option>
         </select>
-    </div>
-
-    <!-- Nova Funcionalidade: Sexo -->
-    <label>Sexo</label>
-    <select name="sexo" required style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #ccc;">
-        <option value="" disabled selected>Selecione o sexo</option>
-        <option value="Macho">Macho</option>
-        <option value="Fêmea">Fêmea</option>
-    </select>
-
-    <!-- Descrição agora serve explicitamente como Observações do usuário -->
-    <label>Observações / Descrição</label>
-    <textarea name="descricao" rows="5" placeholder="Ex: Tem uma mancha branca na pata, é arisco, atende pelo nome de..." required></textarea>
-
-    <label>Cidade</label>
-    <input type="text" name="cidade" required>
-
-    <label>Contato</label>
-<input
-type="text"
-id="contato"
-name="contato"
-placeholder="Telefone ou WhatsApp"
-maxlength="15"
-required>
 
 
-    <label>Foto do animal</label>
-    <input type="file" name="imagem" accept=".jpg,.jpeg,.png" required>
+        <!-- PORTE -->
 
-    <button type="submit" class="botao-principal">Publicar Anúncio</button>
+        <div
+            id="campo-porte"
+            style="display: none;"
+        >
 
-</form>
+            <label for="porte">
+                Porte do cão
+            </label>
 
-<!-- JavaScript para controlar a exibição do Porte apenas para Caninos -->
-<script>
-    const selectEspecie = document.getElementById('especie');
-    const divPorte = document.getElementById('campo-porte');
+            <select
+                name="porte"
+                id="porte"
+            >
+                <option
+                    value=""
+                    disabled
+                    selected
+                >
+                    Selecione o porte
+                </option>
 
-    selectEspecie.addEventListener('change', function() {
-        if (this.value === 'Canino') {
-            divPorte.style.display = 'block'; // Mostra o campo se for Canino
-        } else {
-            divPorte.style.display = 'none';  // Esconde para qualquer outra espécie
-        }
-    });
-</script>
+                <option value="Mini">
+                    Mini
+                </option>
 
-<script>
-    // Aplica a máscara de telefone (XX) XXXXX-XXXX automaticamente enquanto digita
-    document.getElementById('contato').addEventListener('input', function (e) {
-        let r = e.target.value.replace(/\D/g, '');
-        if (r.length > 11) r = r.substring(0, 11);
-        if (r.length > 6) {
-            e.target.value = '(' + r.substring(0, 2) + ') ' + r.substring(2, 7) + '-' + r.substring(7);
-        } else if (r.length > 2) {
-            e.target.value = '(' + r.substring(0, 2) + ') ' + r.substring(2);
-        } else if (r.length > 0) {
-            e.target.value = '(' + r;
-        }
-    });
-</script>
+                <option value="Pequeno">
+                    Pequeno
+                </option>
+
+                <option value="Médio">
+                    Médio
+                </option>
+
+                <option value="Grande">
+                    Grande
+                </option>
+
+                <option value="Gigante">
+                    Gigante
+                </option>
+            </select>
+
+        </div>
+
+
+        <!-- SEXO -->
+
+        <label for="sexo">
+            Sexo
+        </label>
+
+        <select
+            name="sexo"
+            id="sexo"
+            required
+        >
+
+            <option
+                value=""
+                disabled
+                selected
+            >
+                Selecione o sexo
+            </option>
+
+            <option value="Macho">
+                Macho
+            </option>
+
+            <option value="Fêmea">
+                Fêmea
+            </option>
+
+        </select>
+
+
+        <!-- IDADE -->
+
+        <label for="faixa_etaria">
+            Faixa etária
+        </label>
+
+        <select
+            name="faixa_etaria"
+            id="faixa_etaria"
+            required
+        >
+
+            <option
+                value=""
+                disabled
+                selected
+            >
+                Selecione a idade aproximada
+            </option>
+
+            <option value="Filhote">
+                Filhote
+            </option>
+
+            <option value="Adulto">
+                Adulto
+            </option>
+
+            <option value="Idoso">
+                Idoso
+            </option>
+
+        </select>
+
+
+        <!-- CEP -->
+
+        <label for="cep_pet">
+            CEP de onde o pet sumiu
+        </label>
+
+        <input
+            type="text"
+            id="cep_pet"
+            name="cep"
+            placeholder="Digite o CEP regional"
+            maxlength="9"
+            required
+            inputmode="numeric"
+        >
+
+
+        <!-- CIDADE -->
+
+        <label for="cidade">
+            Cidade
+        </label>
+
+        <input
+            type="text"
+            id="cidade"
+            name="cidade"
+            required
+        >
+
+
+        <!-- CONTATO -->
+
+        <label for="contato">
+            Contato
+        </label>
+
+        <input
+            type="text"
+            id="contato"
+            name="contato"
+            placeholder="Telefone ou WhatsApp"
+            maxlength="15"
+            required
+            inputmode="tel"
+        >
+
+
+        <!-- DESCRIÇÃO -->
+
+        <label for="descricao">
+            Observações / descrição
+        </label>
+
+        <textarea
+            id="descricao"
+            name="descricao"
+            rows="5"
+            placeholder="Ex: Tem uma mancha branca na pata, é arisco, atende pelo nome de..."
+            required
+        ></textarea>
+
+
+        <!-- =================================================
+             FOTOS
+             ================================================= -->
+
+        <label>
+            Fotos do animal
+        </label>
+
+        <p class="fotos-descricao">
+            Adicione 3 fotos obrigatórias — 1 principal + 2 para a
+            galeria. Você também pode adicionar até 2 fotos extras.
+        </p>
+
+
+        <div class="fotos-grid">
+
+            <!-- FOTO 1 -->
+
+            <div class="foto-item">
+
+                <input
+                    type="file"
+                    id="foto1"
+                    name="fotos"
+                    class="foto-input"
+                    accept=".jpg,.jpeg,.png"
+                    required
+                >
+
+                <label
+                    for="foto1"
+                    class="foto-caixa principal"
+                >
+
+                    <span
+                        id="texto-foto1"
+                        class="texto-foto"
+                    >
+                        <span class="icone">＋</span>
+                        Foto principal
+                    </span>
+
+                    <img
+                        id="preview-foto1"
+                        class="preview-foto"
+                        alt="Pré-visualização da foto principal"
+                    >
+
+                </label>
+
+                <p class="foto-legenda principal">
+                    Principal
+                </p>
+
+            </div>
+
+
+            <!-- FOTO 2 -->
+
+            <div class="foto-item">
+
+                <input
+                    type="file"
+                    id="foto2"
+                    name="fotos"
+                    class="foto-input"
+                    accept=".jpg,.jpeg,.png"
+                    required
+                >
+
+                <label
+                    for="foto2"
+                    class="foto-caixa"
+                >
+
+                    <span
+                        id="texto-foto2"
+                        class="texto-foto"
+                    >
+                        <span class="icone">＋</span>
+                        Foto 2
+                    </span>
+
+                    <img
+                        id="preview-foto2"
+                        class="preview-foto"
+                        alt="Pré-visualização da foto 2"
+                    >
+
+                </label>
+
+                <p class="foto-legenda">
+                    Galeria
+                </p>
+
+            </div>
+
+
+            <!-- FOTO 3 -->
+
+            <div class="foto-item">
+
+                <input
+                    type="file"
+                    id="foto3"
+                    name="fotos"
+                    class="foto-input"
+                    accept=".jpg,.jpeg,.png"
+                    required
+                >
+
+                <label
+                    for="foto3"
+                    class="foto-caixa"
+                >
+
+                    <span
+                        id="texto-foto3"
+                        class="texto-foto"
+                    >
+                        <span class="icone">＋</span>
+                        Foto 3
+                    </span>
+
+                    <img
+                        id="preview-foto3"
+                        class="preview-foto"
+                        alt="Pré-visualização da foto 3"
+                    >
+
+                </label>
+
+                <p class="foto-legenda">
+                    Galeria
+                </p>
+
+            </div>
+
+
+            <!-- FOTO 4 -->
+
+            <div class="foto-item">
+
+                <input
+                    type="file"
+                    id="foto4"
+                    name="fotos"
+                    class="foto-input"
+                    accept=".jpg,.jpeg,.png"
+                >
+
+                <label
+                    for="foto4"
+                    class="foto-caixa"
+                >
+
+                    <span
+                        id="texto-foto4"
+                        class="texto-foto"
+                    >
+                        <span class="icone">＋</span>
+                        Foto 4
+                    </span>
+
+                    <img
+                        id="preview-foto4"
+                        class="preview-foto"
+                        alt="Pré-visualização da foto 4"
+                    >
+
+                </label>
+
+                <p class="foto-legenda">
+                    Opcional
+                </p>
+
+            </div>
+
+
+            <!-- FOTO 5 -->
+
+            <div class="foto-item">
+
+                <input
+                    type="file"
+                    id="foto5"
+                    name="fotos"
+                    class="foto-input"
+                    accept=".jpg,.jpeg,.png"
+                >
+
+                <label
+                    for="foto5"
+                    class="foto-caixa"
+                >
+
+                    <span
+                        id="texto-foto5"
+                        class="texto-foto"
+                    >
+                        <span class="icone">＋</span>
+                        Foto 5
+                    </span>
+
+                    <img
+                        id="preview-foto5"
+                        class="preview-foto"
+                        alt="Pré-visualização da foto 5"
+                    >
+
+                </label>
+
+                <p class="foto-legenda">
+                    Opcional
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- MENSAGEM -->
+
+        <p
+            id="mensagem-fotos"
+            class="mensagem-fotos"
+        ></p>
+
+
+        <!-- PUBLICAR -->
+
+        <button
+            type="submit"
+            class="botao-publicar"
+        >
+            Publicar anúncio
+        </button>
+
+    </form>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            /* =================================================
+               ESPÉCIE / PORTE
+               ================================================= */
+
+            const selectEspecie =
+                document.getElementById("especie");
+
+            const divPorte =
+                document.getElementById("campo-porte");
+
+            const selectPorte =
+                document.getElementById("porte");
+
+
+            selectEspecie.addEventListener("change", function () {
+
+                if (this.value === "Canino") {
+
+                    divPorte.style.display = "block";
+
+                    selectPorte.required = true;
+
+                } else {
+
+                    divPorte.style.display = "none";
+
+                    selectPorte.required = false;
+                    selectPorte.value = "";
+
+                }
+
+            });
+
+
+            /* =================================================
+               CEP
+               ================================================= */
+
+            const campoCep =
+                document.getElementById("cep_pet");
+
+
+            campoCep.addEventListener("input", function (evento) {
+
+                let valor =
+                    evento.target.value
+                        .replace(/\D/g, "")
+                        .substring(0, 8);
+
+                if (valor.length > 5) {
+
+                    valor =
+                        valor.substring(0, 5) +
+                        "-" +
+                        valor.substring(5);
+
+                }
+
+                evento.target.value = valor;
+
+            });
+
+
+            /* =================================================
+               TELEFONE
+               ================================================= */
+
+            const campoContato =
+                document.getElementById("contato");
+
+
+            campoContato.addEventListener("input", function (evento) {
+
+                let valor =
+                    evento.target.value
+                        .replace(/\D/g, "")
+                        .substring(0, 11);
+
+
+                if (valor.length > 6) {
+
+                    evento.target.value =
+                        "(" +
+                        valor.substring(0, 2) +
+                        ") " +
+                        valor.substring(2, 7) +
+                        "-" +
+                        valor.substring(7);
+
+                }
+
+                else if (valor.length > 2) {
+
+                    evento.target.value =
+                        "(" +
+                        valor.substring(0, 2) +
+                        ") " +
+                        valor.substring(2);
+
+                }
+
+                else if (valor.length > 0) {
+
+                    evento.target.value =
+                        "(" +
+                        valor;
+
+                }
+
+                else {
+
+                    evento.target.value = "";
+
+                }
+
+            });
+
+
+            /* =================================================
+               PRÉ-VISUALIZAÇÃO DAS FOTOS
+               ================================================= */
+
+            function configurarFoto(numero) {
+
+                const campo =
+                    document.getElementById(
+                        "foto" + numero
+                    );
+
+                const preview =
+                    document.getElementById(
+                        "preview-foto" + numero
+                    );
+
+                const texto =
+                    document.getElementById(
+                        "texto-foto" + numero
+                    );
+
+
+                campo.addEventListener(
+                    "change",
+                    function () {
+
+                        const arquivo =
+                            campo.files &&
+                            campo.files[0];
+
+
+                        if (!arquivo) {
+                            return;
+                        }
+
+
+                        if (
+                            !arquivo.type.startsWith(
+                                "image/"
+                            )
+                        ) {
+
+                            campo.value = "";
+
+                            return;
+                        }
+
+
+                        const leitor =
+                            new FileReader();
+
+
+                        leitor.onload =
+                            function (evento) {
+
+                                preview.src =
+                                    evento.target.result;
+
+                                preview.style.display =
+                                    "block";
+
+                                texto.style.display =
+                                    "none";
+
+                            };
+
+
+                        leitor.readAsDataURL(
+                            arquivo
+                        );
+
+                    }
+                );
+
+            }
+
+
+            for (
+                let numero = 1;
+                numero <= 5;
+                numero++
+            ) {
+
+                configurarFoto(numero);
+
+            }
+
+
+            /* =================================================
+               VALIDAÇÃO DAS FOTOS
+               ================================================= */
+
+            const formulario =
+                document.querySelector(
+                    ".formulario-pet"
+                );
+
+            const mensagem =
+                document.getElementById(
+                    "mensagem-fotos"
+                );
+
+
+            formulario.addEventListener(
+                "submit",
+                function (evento) {
+
+                    let quantidadeFotos = 0;
+
+
+                    for (
+                        let numero = 1;
+                        numero <= 5;
+                        numero++
+                    ) {
+
+                        const campo =
+                            document.getElementById(
+                                "foto" + numero
+                            );
+
+
+                        if (
+                            campo.files &&
+                            campo.files.length > 0
+                        ) {
+
+                            quantidadeFotos++;
+
+                        }
+
+                    }
+
+
+                    if (quantidadeFotos < 3) {
+
+                        evento.preventDefault();
+
+                        mensagem.textContent =
+                            "Selecione pelo menos as 3 fotos obrigatórias.";
+
+                        mensagem.style.display =
+                            "block";
+
+                        mensagem.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center"
+                        });
+
+                        return;
+
+                    }
+
+
+                    if (quantidadeFotos > 5) {
+
+                        evento.preventDefault();
+
+                        mensagem.textContent =
+                            "Você pode enviar no máximo 5 fotos.";
+
+                        mensagem.style.display =
+                            "block";
+
+                        mensagem.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center"
+                        });
+
+                        return;
+
+                    }
+
+
+                    mensagem.style.display =
+                        "none";
+
+                }
+            );
+
+        });
+    </script>
 
 </body>
+
 </html>
