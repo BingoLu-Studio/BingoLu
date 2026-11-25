@@ -7303,3 +7303,12 @@ button,
     padding: 10px 18px !important;     /* Aumenta o preenchimento interno */
     font-size: 14.5px !important;       /* Aumenta levemente a fonte */
 }
+/* =========================================================
+   AJUSTE DE LARGURA (LATERAIS) DO BANNER DO TÍTULO
+   ========================================================= */
+
+   .pagina-feed .cabecalho-feed {
+    margin: 28px auto 12px !important;    /* Restaura a altura/margem original que você gostava */
+    max-width: 580px !important;         /* Diminui a largura lateral (antes era 760px ou 900px) */
+    width: 90% !important;               /* Garante que se adapte bem em celulares */
+}

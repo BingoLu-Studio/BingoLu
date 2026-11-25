@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meus Pets - BingoLú</title>
+    <title>Meus Posts - BingoLú</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
 <style>
@@ -107,11 +107,17 @@
     color: white;
     font-size: 14px;
 }
+
+/* Garante o título principal limpo */
+.pagina-meus-posts .titulo-pagina {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
+    font-weight: 700 !important;
+}
 </style>
 
 </head>
 
-<body>
+<body class="pagina-meus-posts">
 
 <div class="navbar">
     <h1>BingoLú Pets</h1>
