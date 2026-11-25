@@ -7234,3 +7234,31 @@ button,
     }
 
 }
+
+/* Mensagem de erro do login */
+.mensagem-erro-login {
+    color: #b42318;
+    background-color: #fef3f2;
+    border: 1px solid #fecdca;
+    border-radius: 8px;
+    padding: 11px 13px;
+    margin: 0 0 16px;
+    font-size: 14px;
+    line-height: 1.45;
+    font-weight: 600;
+
+    animation: aparecerErro 0.35s ease-out;
+}
+
+/* Animação de entrada */
+@keyframes aparecerErro {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

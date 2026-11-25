@@ -1,15 +1,11 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="pt-BR">
 <head>
-
     <meta charset="UTF-8">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - BingoLú</title>
 
-    <link rel="stylesheet"
-    href="{{ url_for('static', filename='style.css') }}">
-
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body class="pagina-login">
@@ -17,40 +13,38 @@
 <div class="conteudo-login">
 
     <div class="apresentacao-login">
+        <h1 class="logo-login">BingoLú</h1>
 
-        <h1 class="logo-login">
-            BingoLú
-        </h1>
-
-        <h2>
-            Bem-vindo de volta!
-        </h2>
+        <h2>Bem-vindo de volta!</h2>
 
         <p class="descricao-login">
             Entre na sua conta para acompanhar seus anúncios,
             receber avistamentos e ajudar outros pets a voltarem para casa.
         </p>
-
     </div>
-
 
     <div class="card-login">
 
-        <h2>
-            Acessar minha conta
-        </h2>
+        <h2>Acessar minha conta</h2>
 
         <p class="subtitulo-login">
             Informe seus dados para continuar.
         </p>
 
-
         <form action="/login" method="POST">
+
+            {% if erro %}
+                <p class="mensagem-erro-login" role="alert" aria-live="polite">
+                    {{ erro }}
+                </p>
+            {% endif %}
 
             <input
                 type="email"
                 name="email"
                 placeholder="E-mail"
+                value="{{ email|default('', true) }}"
+                autocomplete="email"
                 required
             >
 
@@ -58,55 +52,30 @@
                 type="password"
                 name="senha"
                 placeholder="Senha"
+                autocomplete="current-password"
                 required
             >
 
-            <button type="submit">
-                Entrar
-            </button>
+            <button type="submit">Entrar</button>
 
         </form>
 
-
         <p class="link-secundario">
-
             Ainda não possui conta?
-
-            <a href="/cadastro">
-                Cadastre-se
-            </a>
-
+            <a href="/cadastro">Cadastre-se</a>
         </p>
 
     </div>
 
-
     <div class="proposito-login">
-
-        <span>
-            Encontrar
-        </span>
-
-        <span class="separador">
-            •
-        </span>
-
-        <span>
-            Avisar
-        </span>
-
-        <span class="separador">
-            •
-        </span>
-
-        <span>
-            Reencontrar
-        </span>
-
+        <span>Encontrar</span>
+        <span class="separador">•</span>
+        <span>Avisar</span>
+        <span class="separador">•</span>
+        <span>Reencontrar</span>
     </div>
 
 </div>
 
 </body>
-
 </html>

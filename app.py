@@ -555,12 +555,16 @@ def login():
                 "/feed"
             )
 
-        return (
-            "Email ou senha incorretos"
+        return render_template(
+            "login.html",
+            erro="E-mail ou senha incorretos. Verifique os dados e tente novamente.",
+            email=email
         )
 
     return render_template(
-        "login.html"
+        "login.html",
+        erro=None,
+        email=""
     )
 
 
