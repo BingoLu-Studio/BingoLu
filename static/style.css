@@ -2196,6 +2196,8 @@ button,
 }
 /* Fonte divertida do BingoLú no Feed */
 
+/* Fonte divertida mantida APENAS no BingoLú do Feed */
+
 .pagina-feed .navbar h1 {
 
     font-family: "Comic Sans MS",
@@ -2206,16 +2208,14 @@ button,
 
 }
 
+/* Garante que o título principal e subtítulos do feed usem a fonte padrão comum */
 
-/* Fonte divertida do título principal */
+.pagina-feed .titulo-pagina,
+.pagina-feed .cabecalho-feed .titulo-pagina {
 
-.pagina-feed .titulo-pagina {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 
-    font-family: "Comic Sans MS",
-                 "Comic Sans",
-                 cursive;
-
-    font-weight: bold;
+    font-weight: 700;
 
 }
 /* =========================================================
