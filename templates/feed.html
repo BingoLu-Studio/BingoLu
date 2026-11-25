@@ -20,7 +20,7 @@
 
         <div class="navbar-conteudo">
 
-            <h1>BingoLú</h1>
+            <h1>BingoLú Pets</h1>
 
             <div class="menu">
 
@@ -71,17 +71,10 @@
 
 
         <!-- =================================================
-             ABAS: REGIONAL / ALERTAS
+             ABAS: ALERTAS / REGIONAL (ORDEM INVERTIDA)
         ================================================== -->
 
         <nav class="abas-feed">
-
-            <a
-                href="/feed?aba=geral{% if especie_ativa %}&especie={{ especie_ativa }}{% endif %}"
-                class="aba-link {% if aba_ativa == 'geral' %}aba-ativa{% endif %}"
-            >
-                Regional
-            </a>
 
             <a
                 href="/feed?aba=alertas{% if especie_ativa %}&especie={{ especie_ativa }}{% endif %}"
@@ -90,8 +83,14 @@
                 Alertas próximos
             </a>
 
-        </nav>
+            <a
+                href="/feed?aba=geral{% if especie_ativa %}&especie={{ especie_ativa }}{% endif %}"
+                class="aba-link {% if aba_ativa == 'geral' %}aba-ativa{% endif %}"
+            >
+                Regional
+            </a>
 
+        </nav>
 
         <!-- =================================================
              FILTROS DE ANIMAL
