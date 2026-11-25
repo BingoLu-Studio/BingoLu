@@ -7262,3 +7262,28 @@ button,
         transform: translateY(0);
     }
 }
+/* =========================================================
+   CORREÇÃO DEFINITIVA DE TIPOGRAFIA - BINGOLÚ
+   Garante Comic Sans APENAS no logo e fonte comum nos títulos
+========================================================= */
+
+/* 1. Mantém Comic Sans exclusivamente no Logo da Navbar e Telas Iniciais */
+.navbar h1,
+.pagina-feed .navbar h1,
+.logo-inicial,
+.logo-login {
+    font-family: "Comic Sans MS", "Comic Sans", cursive !important;
+    font-weight: bold !important;
+}
+
+/* 2. Força fonte comum/limpa em todos os títulos de página (incluindo "Animais perdidos") */
+.titulo-pagina,
+.pagina-feed .titulo-pagina,
+.cabecalho-feed .titulo-pagina,
+.conteudo-cadastro h1,
+.apresentacao-inicial h2,
+.apresentacao-login h2,
+.card-login h2 {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
+    font-weight: 700 !important;
+}
