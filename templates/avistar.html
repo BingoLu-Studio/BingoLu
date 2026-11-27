@@ -1,55 +1,334 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 
 <head>
-
-    <title>Informar Avistamento</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informar Avistamento - BingoLú</title>
 
     <link rel="stylesheet"
-    href="{{ url_for('static', filename='style.css') }}">
+          href="{{ url_for('static', filename='style.css') }}">
 
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='avistamento.css') }}">
 </head>
 
-<body>
+<body class="pagina-avistamento">
 
-    <h1 class="titulo-pagina titulo-avistamento">
-        Informar Avistamento
-    </h1>
-<form method="POST">
+    <main class="avistamento-container">
 
-    <input
-    type="text"
-    name="local"
-    placeholder="Local onde o pet foi visto"
-    required>
+        <header class="avistamento-cabecalho">
+            <span class="avistamento-etiqueta">Ajude a encontrar</span>
 
-    <input
-    type="text"
-    name="nome_contato"
-    placeholder="Seu nome"
-    required>
+            <h1>Informar Avistamento</h1>
 
-    <input
-    type="text"
-    name="telefone_contato"
-    placeholder="Telefone para contato">
+            <p>
+                Viu este animal? Registre as informações com atenção.
+                Um endereço correto pode fazer toda a diferença no reencontro.
+            </p>
+        </header>
 
-    <input
-    type="email"
-    name="email_contato"
-    placeholder="E-mail para contato">
+        <section class="avistamento-card">
 
-    <textarea
-    name="observacao"
-    placeholder="Observações"
-    required></textarea>
+            <form method="POST"
+                  id="form-avistamento"
+                  onsubmit="return prepararEndereco()">
 
-    <button type="submit">
-        Enviar informação
-    </button>
+                <input type="hidden"
+                       name="local"
+                       id="local-completo">
 
-</form>
+                <section class="grupo-formulario">
+
+                    <div class="titulo-grupo">
+                        <span class="numero-grupo">01</span>
+                        <div>
+                            <h2>Onde o animal foi visto?</h2>
+                            <p>Informe o endereço do local do avistamento.</p>
+                        </div>
+                    </div>
+
+                    <div class="campo">
+                        <label for="cep">CEP</label>
+
+                        <input
+                            type="text"
+                            id="cep"
+                            placeholder="00000-000"
+                            maxlength="9"
+                            inputmode="numeric"
+                            autocomplete="postal-code"
+                            required
+                        >
+
+                        <small id="mensagem-cep">
+                            Digite o CEP para consultar o endereço automaticamente.
+                        </small>
+                    </div>
+
+                    <div class="campo">
+                        <label for="logradouro">Rua / Avenida</label>
+                        <input
+                            type="text"
+                            id="logradouro"
+                            placeholder="Nome da rua"
+                            maxlength="150"
+                            required
+                        >
+                    </div>
+
+                    <div class="campo">
+                        <label for="bairro">Bairro</label>
+                        <input
+                            type="text"
+                            id="bairro"
+                            placeholder="Bairro"
+                            maxlength="100"
+                            required
+                        >
+                    </div>
+
+                    <div class="campo">
+                        <label for="cidade">Cidade</label>
+                        <input
+                            type="text"
+                            id="cidade"
+                            placeholder="Cidade"
+                            maxlength="100"
+                            required
+                        >
+                    </div>
+
+                    <div class="campo">
+                        <label for="referencia">
+                            Ponto de referência <span>(opcional)</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="referencia"
+                            placeholder="Ex.: próximo à praça ou ao mercado"
+                            maxlength="150"
+                        >
+                    </div>
+
+                </section>
+
+                <section class="grupo-formulario">
+
+                    <div class="titulo-grupo">
+                        <span class="numero-grupo">02</span>
+                        <div>
+                            <h2>O que você observou?</h2>
+                            <p>Descreva o que aconteceu de forma objetiva.</p>
+                        </div>
+                    </div>
+
+                    <div class="campo">
+                        <label for="observacao">Descrição do avistamento</label>
+
+                        <textarea
+                            name="observacao"
+                            id="observacao"
+                            placeholder="Descreva onde o animal estava, para qual direção foi, como estava e outras características que possam ajudar..."
+                            minlength="10"
+                            maxlength="1000"
+                            required
+                        ></textarea>
+
+                        <small>
+                            Evite informações incertas. Relate somente o que realmente observou.
+                        </small>
+                    </div>
+
+                </section>
+
+                <section class="grupo-formulario">
+
+                    <div class="titulo-grupo">
+                        <span class="numero-grupo">03</span>
+                        <div>
+                            <h2>Seus dados para contato</h2>
+                            <p>O responsável poderá entrar em contato para confirmar as informações.</p>
+                        </div>
+                    </div>
+
+                    <div class="campo">
+                        <label for="nome-contato">Seu nome</label>
+
+                        <input
+                            type="text"
+                            name="nome_contato"
+                            id="nome-contato"
+                            placeholder="Nome completo"
+                            minlength="3"
+                            maxlength="100"
+                            autocomplete="name"
+                            required
+                        >
+                    </div>
+
+                    <div class="campo">
+                        <label for="telefone-contato">Telefone</label>
+
+                        <input
+                            type="tel"
+                            name="telefone_contato"
+                            id="telefone-contato"
+                            placeholder="(00) 00000-0000"
+                            maxlength="15"
+                            inputmode="tel"
+                            autocomplete="tel"
+                            required
+                        >
+                    </div>
+
+                    <div class="campo">
+                        <label for="email-contato">
+                            E-mail <span>(opcional)</span>
+                        </label>
+
+                        <input
+                            type="email"
+                            name="email_contato"
+                            id="email-contato"
+                            placeholder="seuemail@exemplo.com"
+                            maxlength="150"
+                            autocomplete="email"
+                        >
+                    </div>
+
+                </section>
+
+                <div class="avistamento-aviso">
+                    <strong>Antes de enviar:</strong>
+                    confira o endereço e certifique-se de que as informações
+                    correspondem ao que você realmente observou.
+                </div>
+
+                <button type="submit" class="botao-enviar-avistamento">
+                    Enviar avistamento
+                </button>
+
+                <a href="/feed" class="link-voltar-avistamento">
+                    Voltar ao Feed
+                </a>
+
+            </form>
+
+        </section>
+
+    </main>
+
+    <script>
+        const campoCep = document.getElementById("cep");
+        const mensagemCep = document.getElementById("mensagem-cep");
+        const campoTelefone = document.getElementById("telefone-contato");
+
+        campoCep.addEventListener("input", function () {
+            const numeros = this.value.replace(/\D/g, "").slice(0, 8);
+
+            this.value = numeros.length > 5
+                ? numeros.slice(0, 5) + "-" + numeros.slice(5)
+                : numeros;
+        });
+
+        campoTelefone.addEventListener("input", function () {
+            const numeros = this.value.replace(/\D/g, "").slice(0, 11);
+
+            if (numeros.length <= 2) {
+                this.value = numeros.length ? "(" + numeros : "";
+            } else if (numeros.length <= 10) {
+                this.value = "(" + numeros.slice(0, 2) + ") " +
+                    numeros.slice(2, 6) +
+                    (numeros.length > 6 ? "-" + numeros.slice(6) : "");
+            } else {
+                this.value = "(" + numeros.slice(0, 2) + ") " +
+                    numeros.slice(2, 7) + "-" + numeros.slice(7);
+            }
+        });
+
+        campoCep.addEventListener("blur", consultarCep);
+
+        async function consultarCep() {
+            const cep = campoCep.value.replace(/\D/g, "");
+
+            if (cep.length !== 8) {
+                mensagemCep.textContent = "Informe um CEP válido com 8 números.";
+                mensagemCep.classList.add("mensagem-cep-erro");
+                return;
+            }
+
+            mensagemCep.textContent = "Consultando endereço...";
+            mensagemCep.classList.remove("mensagem-cep-erro");
+
+            try {
+                const resposta = await fetch(
+                    "https://viacep.com.br/ws/" + cep + "/json/"
+                );
+
+                if (!resposta.ok) {
+                    throw new Error("Falha na consulta");
+                }
+
+                const dados = await resposta.json();
+
+                if (dados.erro) {
+                    throw new Error("CEP não encontrado");
+                }
+
+                document.getElementById("logradouro").value =
+                    dados.logradouro || "";
+
+                document.getElementById("bairro").value =
+                    dados.bairro || "";
+
+                document.getElementById("cidade").value =
+                    dados.localidade || "";
+
+                mensagemCep.textContent =
+                    "Endereço localizado. Confira os dados!";
+
+            } catch (erro) {
+                mensagemCep.textContent =
+                    "Não foi possível consultar o CEP. Preencha o endereço manualmente.";
+
+                mensagemCep.classList.add("mensagem-cep-erro");
+            }
+        }
+
+        function prepararEndereco() {
+            const logradouro =
+                document.getElementById("logradouro").value.trim();
+
+            const bairro =
+                document.getElementById("bairro").value.trim();
+
+            const cidade =
+                document.getElementById("cidade").value.trim();
+
+            const cep =
+                campoCep.value.trim();
+
+            const referencia =
+                document.getElementById("referencia").value.trim();
+
+            const partes = [
+                logradouro,
+                bairro,
+                cidade,
+                "CEP: " + cep
+            ];
+
+            if (referencia) {
+                partes.push("Referência: " + referencia);
+            }
+
+            document.getElementById("local-completo").value =
+                partes.join(" - ");
+
+            return true;
+        }
+    </script>
 
 </body>
-
 </html>

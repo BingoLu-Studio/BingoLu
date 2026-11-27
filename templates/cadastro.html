@@ -1,57 +1,47 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="pt-BR">
 <head>
-
     <meta charset="UTF-8">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Criar conta - BingoLú</title>
-
-    <link rel="stylesheet"
-    href="{{ url_for('static', filename='style.css') }}">
-
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-
 <body class="pagina-login">
 
 <div class="conteudo-login">
 
     <div class="apresentacao-login">
-
-        <h1 class="logo-login">
-            BingoLú
-        </h1>
-
-        <h2>
-            Faça parte do BingoLú!
-        </h2>
-
+        <h1 class="logo-login">BingoLú</h1>
+        <h2>Faça parte do BingoLú!</h2>
         <p class="descricao-login">
             Crie sua conta para divulgar pets perdidos,
             informar avistamentos e ajudar animais a
             encontrarem o caminho de volta para casa.
         </p>
-
     </div>
 
-
     <div class="card-login">
-
-        <h2>
-            Criar minha conta
-        </h2>
-
+        <h2>Criar minha conta</h2>
         <p class="subtitulo-login">
             Preencha seus dados para começar.
         </p>
 
-
         <form action="/cadastro" method="POST">
+
+            {% if erro %}
+                <p class="mensagem-erro-cadastro" role="alert" aria-live="polite">
+                    {{ erro }}
+                </p>
+            {% endif %}
 
             <input
                 type="text"
                 name="nome"
                 placeholder="Nome"
+                value="{{ formulario.get('nome', '') }}"
+                minlength="3"
+                maxlength="80"
+                autocomplete="name"
                 required
             >
 
@@ -59,33 +49,42 @@
                 type="email"
                 name="email"
                 placeholder="E-mail"
+                value="{{ formulario.get('email', '') }}"
+                autocomplete="email"
                 required
             >
 
             <input
                 type="password"
                 name="senha"
-                placeholder="Senha"
+                placeholder="Senha (mínimo de 6 caracteres)"
+                minlength="6"
+                maxlength="128"
+                autocomplete="new-password"
                 required
             >
 
-            <!-- Campo de Telefone com máscara automática -->
             <input
                 type="text"
                 id="telefone"
                 name="telefone"
                 placeholder="Telefone (DDD + Número)"
+                value="{{ formulario.get('telefone', '') }}"
                 maxlength="15"
+                inputmode="tel"
+                autocomplete="tel"
                 required
             >
 
-            <!-- Campo de CEP com máscara automática -->
             <input
                 type="text"
                 id="cep"
                 name="cep"
                 placeholder="CEP"
+                value="{{ formulario.get('cep', '') }}"
                 maxlength="9"
+                inputmode="numeric"
+                autocomplete="postal-code"
                 required
             >
 
@@ -93,71 +92,56 @@
                 type="text"
                 name="cidade"
                 placeholder="Cidade"
+                value="{{ formulario.get('cidade', '') }}"
+                autocomplete="address-level2"
                 required
             >
 
-            <button type="submit">
-                Criar conta
-            </button>
-
+            <button type="submit">Criar conta</button>
         </form>
 
-        <!-- JavaScript para aplicar as máscaras em tempo real na tela -->
-        <script>
-            // Máscara de Telefone: (XX) XXXXX-XXXX ou (XX) XXXX-XXXX
-            document.getElementById('telefone').addEventListener('input', function (e) {
-                let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
-                e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
-            });
-
-            // Máscara de CEP: XXXXX-XXX
-            document.getElementById('cep').addEventListener('input', function (e) {
-                let x = e.target.value.replace(/\D/g, '').match(/(\d{0,5})(\d{0,3})/);
-                e.target.value = !x[2] ? x[1] : x[1] + '-' + x[2];
-            });
-        </script>
-
-
-
         <p class="link-secundario">
-
             Já possui uma conta?
-
-            <a href="/login">
-                Entrar
-            </a>
-
+            <a href="/login">Entrar</a>
         </p>
-
     </div>
 
-
     <div class="proposito-login">
-
-        <span>
-            Encontrar
-        </span>
-
-        <span class="separador">
-            •
-        </span>
-
-        <span>
-            Avisar
-        </span>
-
-        <span class="separador">
-            •
-        </span>
-
-        <span>
-            Reencontrar
-        </span>
-
+        <span>Encontrar</span>
+        <span class="separador">•</span>
+        <span>Avisar</span>
+        <span class="separador">•</span>
+        <span>Reencontrar</span>
     </div>
 
 </div>
 
-</body>
+<script>
+    // Máscara de telefone: (XX) XXXXX-XXXX ou (XX) XXXX-XXXX.
+    document.getElementById('telefone').addEventListener('input', function (e) {
+        const numeros = e.target.value.replace(/\D/g, '').slice(0, 11);
+        const ddd = numeros.slice(0, 2);
+        const restante = numeros.slice(2);
 
+        if (numeros.length <= 2) {
+            e.target.value = ddd ? '(' + ddd : '';
+        } else if (numeros.length <= 10) {
+            e.target.value = '(' + ddd + ') ' + restante.slice(0, 4) +
+                (restante.length > 4 ? '-' + restante.slice(4, 8) : '');
+        } else {
+            e.target.value = '(' + ddd + ') ' + restante.slice(0, 5) +
+                (restante.length > 5 ? '-' + restante.slice(5, 9) : '');
+        }
+    });
+
+    // Máscara de CEP: XXXXX-XXX.
+    document.getElementById('cep').addEventListener('input', function (e) {
+        const numeros = e.target.value.replace(/\D/g, '').slice(0, 8);
+        e.target.value = numeros.length > 5
+            ? numeros.slice(0, 5) + '-' + numeros.slice(5)
+            : numeros;
+    });
+</script>
+
+</body>
 </html>

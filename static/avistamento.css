@@ -1,0 +1,242 @@
+
+/* =========================================
+   FORMULÁRIO DE AVISTAMENTO - BINGOLÚ
+   ========================================= */
+
+   .pagina-avistamento {
+    min-height: 100vh;
+    margin: 0;
+    padding: 0 16px 45px;
+    background: #f1efe3;
+    color: #382b40;
+}
+
+.avistamento-container {
+    width: min(760px, 100%);
+    margin: 0 auto;
+}
+
+.avistamento-cabecalho {
+    padding: 35px 10px 25px;
+    text-align: center;
+}
+
+.avistamento-etiqueta {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 7px 14px;
+    border-radius: 20px;
+    background: #eee4f7;
+    color: #6A0DAD;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.avistamento-cabecalho h1 {
+    margin: 0 0 10px;
+    color: #6A0DAD;
+    font-size: clamp(27px, 4vw, 36px);
+    line-height: 1.2;
+}
+
+.avistamento-cabecalho p {
+    max-width: 600px;
+    margin: 0 auto;
+    color: #625969;
+    font-size: 16px;
+    line-height: 1.55;
+}
+
+.avistamento-card {
+    padding: 30px;
+    border: 1px solid #e8e1ed;
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 5px 20px rgba(40, 20, 55, .08);
+}
+
+.avistamento-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.grupo-formulario {
+    display: flex;
+    flex-direction: column;
+    gap: 17px;
+}
+
+.titulo-grupo {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding-bottom: 13px;
+    border-bottom: 1px solid #eee8f2;
+}
+
+.numero-grupo {
+    width: 37px;
+    height: 37px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #6A0DAD;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.titulo-grupo h2 {
+    margin: 0 0 4px;
+    color: #432451;
+    font-size: 19px;
+}
+
+.titulo-grupo p {
+    margin: 0;
+    color: #766d7b;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.campo label {
+    color: #432451;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.campo label span {
+    color: #817987;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.campo input,
+.campo textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 13px 14px;
+    border: 1px solid #d9d3dd;
+    border-radius: 8px;
+    background: #fff;
+    color: #382b40;
+    font-family: inherit;
+    font-size: 15px;
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.campo input {
+    min-height: 48px;
+}
+
+.campo textarea {
+    min-height: 125px;
+    resize: vertical;
+    line-height: 1.55;
+}
+
+.campo input:focus,
+.campo textarea:focus {
+    outline: none;
+    border-color: #6A0DAD;
+    box-shadow: 0 0 0 3px rgba(106, 13, 173, .12);
+}
+
+.campo small {
+    color: #766d7b;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.campos-linha {
+    display: grid;
+    grid-template-columns: 1fr 130px;
+    gap: 13px;
+}
+
+.mensagem-cep-erro {
+    color: #b42318 !important;
+}
+
+.avistamento-aviso {
+    padding: 14px 16px;
+    border-left: 4px solid #d6a13d;
+    border-radius: 7px;
+    background: #fff8e8;
+    color: #65512b;
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.botao-enviar-avistamento {
+    width: 100%;
+    min-height: 50px;
+    border: none;
+    border-radius: 9px;
+    background: #6A0DAD;
+    color: #fff;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .2s ease, transform .2s ease;
+}
+
+.botao-enviar-avistamento:hover {
+    background: #52088a;
+    transform: translateY(-1px);
+}
+
+.link-voltar-avistamento {
+    display: block;
+    margin-top: -15px;
+    color: #6A0DAD;
+    text-align: center;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.link-voltar-avistamento:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+    .pagina-avistamento {
+        padding: 0 12px 30px;
+    }
+
+    .avistamento-cabecalho {
+        padding-top: 25px;
+    }
+
+    .avistamento-card {
+        padding: 20px 16px;
+    }
+
+    .campos-linha {
+        grid-template-columns: 1fr 95px;
+        gap: 9px;
+    }
+
+    .titulo-grupo h2 {
+        font-size: 17px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .campo input,
+    .campo textarea,
+    .botao-enviar-avistamento {
+        transition: none;
+    }
+}

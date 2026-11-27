@@ -7312,3 +7312,864 @@ button,
     max-width: 580px !important;         /* Diminui a largura lateral (antes era 760px ou 900px) */
     width: 90% !important;               /* Garante que se adapte bem em celulares */
 }
+
+/* Mensagem de erro do cadastro — mesmo padrão visual do login */
+.mensagem-erro-cadastro {
+    color: #b42318;
+    background-color: #fef3f2;
+    border: 1px solid #fecdca;
+    border-radius: 8px;
+    padding: 11px 13px;
+    margin: 0 0 16px;
+    font-size: 14px;
+    line-height: 1.45;
+    font-weight: 600;
+    animation: aparecerErroCadastro 0.35s ease-out;
+}
+
+@keyframes aparecerErroCadastro {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mensagem-erro-cadastro {
+        animation: none;
+    }
+}
+
+
+/* =====================================================
+   FEED — PADRÃO DOS CARDS DE ANIMAIS
+===================================================== */
+
+.feed-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 28px;
+    align-items: start;
+}
+
+.card-pet {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-radius: 15px;
+    border: 1px solid #e8e3ed;
+    box-shadow: 0 4px 16px rgba(40, 20, 55, 0.08);
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.card-pet:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px rgba(40, 20, 55, 0.13);
+}
+
+.card-alerta-urgente {
+    border: 2px solid #d99b38;
+}
+
+/* Imagem */
+
+.imagem-pet-area {
+    position: relative;
+    width: 100%;
+    height: 260px;
+    background: #f2eff5;
+}
+
+.imagem-pet {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.botao-galeria-pet {
+    position: absolute;
+    top: 13px;
+    right: 13px;
+    width: 43px;
+    height: 43px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255,255,255,.55);
+    border-radius: 50%;
+    background: rgba(30, 20, 38, .78);
+    color: #fff;
+    font-size: 21px;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.botao-galeria-pet:hover {
+    background: #6A0DAD;
+}
+
+/* Conteúdo */
+
+.conteudo-card {
+    padding: 21px;
+    display: flex;
+    flex-direction: column;
+    gap: 17px;
+}
+
+.cabecalho-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.cabecalho-card h2 {
+    margin: 0;
+    color: #34213f;
+    font-size: 24px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.status-perdido-card {
+    flex-shrink: 0;
+    padding: 6px 11px;
+    border-radius: 20px;
+    background: #fff0ed;
+    color: #a93226;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.status-meu-card {
+    background: #f0e7fa;
+    color: #6A0DAD;
+}
+
+/* Características */
+
+.caracteristicas-pet {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.caracteristica-pet {
+    padding: 7px 10px;
+    border-radius: 7px;
+    background: #f5f1f8;
+    color: #493653;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* Descrição */
+
+.descricao-pet-card {
+    padding: 15px;
+    border-left: 4px solid #6A0DAD;
+    border-radius: 7px;
+    background: #faf8fc;
+}
+
+.descricao-pet-card h3,
+.localizacao-pet-card h3 {
+    margin: 0 0 8px;
+    color: #432451;
+    font-size: 15px;
+}
+
+.descricao-pet-card p {
+    margin: 0;
+    color: #514b55;
+    font-size: 15px;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+    white-space: pre-line;
+}
+
+/* Localização */
+
+.localizacao-pet-card {
+    padding: 13px 15px;
+    border-radius: 8px;
+    background: #f4f6f2;
+}
+
+.localizacao-pet-card p {
+    margin: 4px 0 0;
+    color: #454d43;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.distancia-pet-card {
+    color: #5b2875 !important;
+    font-weight: 700;
+}
+
+/* Detalhes */
+
+.detalhes-sanfona {
+    border-top: 1px solid #e9e4ec;
+    border-bottom: 1px solid #e9e4ec;
+    padding: 13px 0;
+}
+
+.titulo-sanfona {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    color: #64258b;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+}
+
+.titulo-sanfona::-webkit-details-marker {
+    display: none;
+}
+
+.titulo-sanfona::after {
+    content: "+";
+    font-size: 22px;
+    line-height: 1;
+}
+
+.detalhes-sanfona[open] .titulo-sanfona::after {
+    content: "−";
+}
+
+.conteudo-sanfona {
+    padding-top: 13px;
+    display: grid;
+    gap: 10px;
+}
+
+.conteudo-sanfona p {
+    margin: 0;
+    color: #514b55;
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+/* Ação */
+
+.acao-card {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.botao-avistar-card {
+    width: 100%;
+    display: block;
+    box-sizing: border-box;
+    padding: 13px 16px;
+    border-radius: 8px;
+    background: #6A0DAD;
+    color: #fff;
+    text-align: center;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 700;
+    transition: background .2s ease;
+}
+
+.botao-avistar-card:hover {
+    background: #52088a;
+}
+
+.aviso-meu-anuncio {
+    padding: 11px;
+    border-radius: 8px;
+    background: #f0e7fa;
+    color: #6A0DAD;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* =====================================================
+   GALERIA DE FOTOS
+===================================================== */
+
+.galeria-overlay[hidden] {
+    display: none !important;
+}
+
+.galeria-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 10, 20, .88);
+}
+
+.galeria-modal {
+    position: relative;
+    width: min(900px, 94vw);
+    height: min(760px, 88vh);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.galeria-imagem-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.galeria-imagem-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 9px;
+}
+
+.galeria-fechar,
+.galeria-controle {
+    position: absolute;
+    z-index: 2;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0,0,0,.65);
+    color: #fff;
+    cursor: pointer;
+}
+
+.galeria-fechar {
+    top: 0;
+    right: 0;
+    width: 43px;
+    height: 43px;
+    font-size: 29px;
+}
+
+.galeria-controle {
+    top: 50%;
+    width: 45px;
+    height: 45px;
+    transform: translateY(-50%);
+    font-size: 30px;
+}
+
+.galeria-anterior {
+    left: 10px;
+}
+
+.galeria-proxima {
+    right: 10px;
+}
+
+.galeria-contador {
+    position: absolute;
+    bottom: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 14px;
+}
+
+.galeria-mensagem {
+    color: #fff;
+    text-align: center;
+    font-size: 15px;
+}
+
+/* Responsividade */
+
+@media (max-width: 600px) {
+    .feed-container {
+        grid-template-columns: 1fr;
+        padding: 0 12px;
+    }
+
+    .imagem-pet-area {
+        height: 230px;
+    }
+
+    .conteudo-card {
+        padding: 17px;
+    }
+
+    .cabecalho-card h2 {
+        font-size: 21px;
+    }
+
+    .galeria-modal {
+        height: 75vh;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card-pet,
+    .botao-avistar-card {
+        transition: none;
+    }
+}
+
+/* =========================================================
+   FEED BINGOLÚ — CABEÇALHO E CARDS PADRONIZADOS
+   Adicione ao final de static/style.css.
+========================================================= */
+
+.feed-principal {
+    width: min(1240px, calc(100% - 40px));
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 28px 0 56px;
+    box-sizing: border-box;
+}
+
+/* Título sem caixa, botão ou fundo */
+.feed-cabecalho {
+    display: block;
+    width: 100%;
+    margin: 12px auto 28px;
+    padding: 0;
+    text-align: center;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.feed-cabecalho .titulo-pagina {
+    margin: 0 0 10px;
+    padding: 0;
+    color: #5b1592;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    font-size: clamp(30px, 3vw, 38px);
+    font-weight: 800;
+    line-height: 1.18;
+}
+
+.feed-cabecalho .subtitulo {
+    max-width: 760px;
+    margin: 0 auto;
+    color: #625b66;
+    font-size: 17px;
+    line-height: 1.5;
+}
+
+/* Abas e filtros */
+.abas-feed {
+    width: 100%;
+    margin: 0 auto 18px;
+    justify-content: center;
+}
+
+.filtros-especie {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 0 auto 28px;
+}
+
+/* Grade: evita card estreito isolado no centro */
+.feed-container {
+    width: 100%;
+    max-width: none;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+    align-items: stretch;
+    gap: 24px;
+}
+
+.card-pet {
+    min-width: 0;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid #e5dce9;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(44, 24, 55, .08);
+    box-sizing: border-box;
+}
+
+.card-alerta-urgente {
+    border: 2px solid #d99b38;
+}
+
+.imagem-pet-area {
+    position: relative;
+    width: 100%;
+    height: 250px;
+    flex: 0 0 250px;
+    overflow: hidden;
+    background: #f0edf2;
+}
+
+.imagem-pet {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.botao-galeria-pet {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 2;
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid rgba(255,255,255,.65);
+    border-radius: 50%;
+    background: rgba(35, 22, 43, .82);
+    color: #fff;
+    font-size: 23px;
+    cursor: pointer;
+}
+
+.botao-galeria-pet:hover,
+.botao-galeria-pet:focus-visible {
+    background: #6A0DAD;
+}
+
+.conteudo-card {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 17px;
+    padding: 22px;
+    box-sizing: border-box;
+}
+
+.cabecalho-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 0;
+}
+
+.cabecalho-card h3 {
+    min-width: 0;
+    margin: 0;
+    color: #54117f;
+    font-size: 27px;
+    font-weight: 800;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+.identificador-anuncio {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 11px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.identificador-anuncio.proprio {
+    background: #f0e5fa;
+    color: #5b1592;
+}
+
+.identificador-anuncio.perdido {
+    background: #fff0ed;
+    color: #a93226;
+}
+
+.caracteristicas-pet {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.caracteristica-pet {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 5px 11px;
+    border-radius: 7px;
+    background: #f3eff6;
+    color: #493653;
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1.3;
+}
+
+.bloco-card {
+    min-width: 0;
+    padding: 15px 16px;
+    border-radius: 9px;
+    box-sizing: border-box;
+}
+
+.bloco-card h4 {
+    margin: 0 0 8px;
+    color: #54216e;
+    font-size: 16px;
+    font-weight: 750;
+    line-height: 1.3;
+}
+
+.bloco-card p {
+    margin: 0;
+    color: #49434d;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    white-space: pre-line;
+}
+
+.descricao-pet-card {
+    border-left: 4px solid #6A0DAD;
+    background: #faf8fc;
+}
+
+.localizacao-pet-card {
+    background: #f3f5f1;
+}
+
+.localizacao-pet-card .distancia-pet-card {
+    margin-top: 7px;
+    color: #5b2875;
+    font-weight: 750;
+}
+
+.detalhes-sanfona {
+    margin: 0;
+    padding: 13px 0;
+    border-top: 1px solid #e8e1eb;
+    border-bottom: 1px solid #e8e1eb;
+}
+
+.titulo-sanfona {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: #5b1592;
+    font-size: 15px;
+    font-weight: 750;
+    line-height: 1.4;
+    cursor: pointer;
+    list-style: none;
+}
+
+.titulo-sanfona::-webkit-details-marker {
+    display: none;
+}
+
+.titulo-sanfona::after {
+    content: "+";
+    flex: 0 0 auto;
+    font-size: 23px;
+    line-height: 1;
+}
+
+.detalhes-sanfona[open] .titulo-sanfona::after {
+    content: "−";
+}
+
+.conteudo-sanfona {
+    display: grid;
+    gap: 0;
+    padding-top: 8px;
+}
+
+.conteudo-sanfona p {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 5px 14px;
+    margin: 0;
+    padding: 11px 0;
+    border-bottom: 1px solid #eee9f0;
+    color: #514b55;
+    font-size: 15px;
+    line-height: 1.45;
+}
+
+.conteudo-sanfona p:last-child {
+    border-bottom: 0;
+}
+
+.conteudo-sanfona strong {
+    color: #54216e;
+}
+
+.conteudo-sanfona span {
+    overflow-wrap: anywhere;
+}
+
+.botao-avistar-card {
+    display: block;
+    width: 100%;
+    margin-top: auto;
+    padding: 14px 17px;
+    border-radius: 9px;
+    background: #6A0DAD;
+    color: #fff;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 750;
+    line-height: 1.35;
+    box-sizing: border-box;
+}
+
+.botao-avistar-card:hover,
+.botao-avistar-card:focus-visible {
+    background: #52088a;
+}
+
+/* Galeria: preserva o modal existente */
+.galeria-overlay[hidden] {
+    display: none !important;
+}
+
+.galeria-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 10, 20, .88);
+}
+
+.galeria-modal {
+    position: relative;
+    width: min(900px, 94vw);
+    height: min(760px, 88vh);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.galeria-imagem-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.galeria-imagem-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 9px;
+}
+
+.galeria-fechar,
+.galeria-controle {
+    position: absolute;
+    z-index: 2;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0,0,0,.65);
+    color: #fff;
+    cursor: pointer;
+}
+
+.galeria-fechar {
+    top: 0;
+    right: 0;
+    width: 43px;
+    height: 43px;
+    font-size: 29px;
+}
+
+.galeria-controle {
+    top: 50%;
+    width: 45px;
+    height: 45px;
+    transform: translateY(-50%);
+    font-size: 30px;
+}
+
+.galeria-anterior { left: 10px; }
+.galeria-proxima { right: 10px; }
+
+.galeria-contador {
+    position: absolute;
+    bottom: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 14px;
+}
+
+@media (max-width: 700px) {
+    .feed-principal {
+        width: min(100% - 24px, 520px);
+        padding-top: 22px;
+    }
+
+    .feed-cabecalho {
+        margin-bottom: 22px;
+    }
+
+    .feed-cabecalho .subtitulo {
+        font-size: 16px;
+    }
+
+    .feed-container {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 20px;
+    }
+
+    .imagem-pet-area {
+        height: 230px;
+        flex-basis: 230px;
+    }
+
+    .conteudo-card {
+        padding: 18px;
+        gap: 15px;
+    }
+
+    .cabecalho-card h3 {
+        font-size: 25px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card-pet,
+    .botao-avistar-card,
+    .botao-galeria-pet {
+        transition: none !important;
+    }
+}
+

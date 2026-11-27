@@ -58,6 +58,7 @@ def arquivo_permitido(nome_arquivo):
 # BANCO DE DADOS
 # =========================================================
 
+
 def criar_banco():
 
     conexao = sqlite3.connect(
@@ -67,67 +68,90 @@ def criar_banco():
 
     cursor = conexao.cursor()
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS usuarios (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome TEXT NOT NULL,
-            email TEXT NOT NULL UNIQUE,
-            senha TEXT NOT NULL,
-            telefone TEXT,
-            cidade TEXT,
-            latitude REAL,
-            longitude REAL
-        )
-    """)
+    try:
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS usuarios (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nome TEXT NOT NULL,
+                email TEXT NOT NULL UNIQUE,
+                senha TEXT NOT NULL,
+                telefone TEXT,
+                cidade TEXT,
+                latitude REAL,
+                longitude REAL
+            )
+        """)
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS pets (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome TEXT NOT NULL,
-            descricao TEXT,
-            cidade TEXT,
-            contato TEXT,
-            usuario_id INTEGER,
-            imagem TEXT,
-            data_postagem TEXT,
-            status TEXT,
-            especie TEXT,
-            sexo TEXT,
-            porte TEXT,
-            latitude REAL,
-            longitude REAL,
-            cep_pet TEXT,
-            faixa_etaria TEXT,
-            nome_dono TEXT
-        )
-    """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS pets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nome TEXT NOT NULL,
+                descricao TEXT,
+                cidade TEXT,
+                contato TEXT,
+                usuario_id INTEGER,
+                imagem TEXT,
+                data_postagem TEXT,
+                status TEXT,
+                especie TEXT,
+                sexo TEXT,
+                porte TEXT,
+                latitude REAL,
+                longitude REAL,
+                cep_pet TEXT,
+                faixa_etaria TEXT,
+                nome_dono TEXT
+            )
+        """)
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS avistamentos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            pet_id INTEGER,
-            local TEXT,
-            observacao TEXT,
-            data_avistamento TEXT,
-            nome_contato TEXT,
-            telefone_contato TEXT,
-            email_contato TEXT
-        )
-    """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS avistamentos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                pet_id INTEGER,
+                local TEXT,
+                observacao TEXT,
+                data_avistamento TEXT,
+                nome_contato TEXT,
+                telefone_contato TEXT,
+                email_contato TEXT,
+                usuario_id INTEGER
+            )
+        """)
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS fotos_pets (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            pet_id INTEGER NOT NULL,
-            imagem TEXT NOT NULL
-        )
-    """)
+        # Migração para bancos que já existiam.
+        colunas_avistamentos = [
+            coluna[1]
+            for coluna in cursor.execute(
+                "PRAGMA table_info(avistamentos)"
+            ).fetchall()
+        ]
 
-    conexao.commit()
-    conexao.close()
+        if "usuario_id" not in colunas_avistamentos:
+            cursor.execute("""
+                ALTER TABLE avistamentos
+                ADD COLUMN usuario_id INTEGER
+            """)
 
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS fotos_pets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                pet_id INTEGER NOT NULL,
+                imagem TEXT NOT NULL
+            )
+        """)
+
+        conexao.commit()
+
+    except sqlite3.Error:
+        conexao.rollback()
+        raise
+
+    finally:
+        cursor.close()
+        conexao.close()
 
 criar_banco()
+
 
 
 # =========================================================
@@ -592,91 +616,93 @@ def cadastro():
 
     if request.method == "POST":
 
-        nome = request.form[
-            "nome"
-        ].strip()
+        nome = request.form.get("nome", "").strip()
+        email = request.form.get("email", "").strip()
+        senha = request.form.get("senha", "")
+        telefone_formatado = request.form.get("telefone", "").strip()
+        cep_formatado = request.form.get("cep", "").strip()
+        cidade_informada = request.form.get("cidade", "").strip()
 
-        email = request.form[
-            "email"
-        ].strip()
+        telefone_limpo = re.sub(r"\D", "", telefone_formatado)
+        cep_limpo = limpar_cep(cep_formatado)
 
-        senha = request.form[
-            "senha"
-        ]
+        formulario = {
+            "nome": nome,
+            "email": email,
+            "telefone": telefone_formatado,
+            "cep": cep_formatado,
+            "cidade": cidade_informada
+        }
 
-        telefone_formatado = (
-            request.form[
-                "telefone"
-            ].strip()
-        )
-
-        cep_formatado = (
-            request.form[
-                "cep"
-            ].strip()
-        )
-
-        telefone_limpo = re.sub(
-            r"\D",
-            "",
-            telefone_formatado
-        )
-
-        cep_limpo = limpar_cep(
-            cep_formatado
-        )
+        def erro_cadastro(mensagem):
+            return render_template(
+                "cadastro.html",
+                erro=mensagem,
+                formulario=formulario
+            )
 
         # -------------------------------------------------
-        # VALIDAÇÕES
+        # VALIDAÇÕES DOS CAMPOS
         # -------------------------------------------------
 
         if len(nome) < 3:
+            return erro_cadastro(
+                "Informe seu nome completo ou um nome com pelo menos 3 caracteres."
+            )
 
-            return (
-                "Nome deve possuir "
-                "pelo menos 3 caracteres."
+        if len(nome) > 80:
+            return erro_cadastro(
+                "O nome deve ter no máximo 80 caracteres."
             )
 
         if not re.match(
-            r"^[^@]+@[^@]+\.[^@]+$",
+            r"^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[^\s@]+\.[^\s@]+$",
             email
         ):
-
-            return "E-mail inválido."
+            return erro_cadastro(
+                "E-mail inválido. Confira o endereço informado."
+            )
 
         if len(senha) < 6:
-
-            return (
-                "A senha deve possuir "
-                "pelo menos 6 caracteres."
+            return erro_cadastro(
+                "A senha deve possuir pelo menos 6 caracteres."
             )
 
-        if not telefone_limpo.isdigit():
-
-            return (
-                "Telefone deve conter "
-                "apenas números."
+        if len(senha) > 128:
+            return erro_cadastro(
+                "A senha deve ter no máximo 128 caracteres."
             )
 
-        if len(
-            telefone_limpo
-        ) not in (10, 11):
-
-            return (
-                "Telefone deve possuir "
-                "10 ou 11 dígitos."
+        if len(telefone_limpo) not in (10, 11):
+            return erro_cadastro(
+                "Telefone inválido. Informe o DDD e o número, com 10 ou 11 dígitos."
             )
 
         if len(cep_limpo) != 8:
+            return erro_cadastro(
+                "CEP inválido. Informe exatamente 8 números."
+            )
 
-            return (
-                "CEP inválido. "
-                "Deve conter exatamente "
-                "8 números."
+        # Evita consultar os serviços de CEP quando o e-mail já existe.
+        conexao = sqlite3.connect(CAMINHO_BANCO, timeout=10)
+        cursor = conexao.cursor()
+        cursor.execute(
+            "SELECT 1 FROM usuarios WHERE LOWER(email) = LOWER(?)",
+            (email,)
+        )
+        email_existente = cursor.fetchone()
+        cursor.close()
+        conexao.close()
+
+        if email_existente:
+            return erro_cadastro(
+                "Este e-mail já está cadastrado. Utilize outro endereço ou entre na sua conta."
             )
 
         # -------------------------------------------------
         # LOCALIZAÇÃO AUTOMÁTICA PELO CEP
+        # Mantém a validação ViaCEP + ArcGIS já existente.
+        # A cidade gravada continua vindo do CEP validado.
         # -------------------------------------------------
 
         (
@@ -684,9 +710,7 @@ def cadastro():
             longitude,
             cidade,
             uf
-        ) = geocodificar_cep(
-            cep_limpo
-        )
+        ) = geocodificar_cep(cep_limpo)
 
         if (
             latitude is None
@@ -694,26 +718,18 @@ def cadastro():
             or cidade is None
             or uf is None
         ):
-
-            return (
-                "Não foi possível localizar "
-                "este CEP. Verifique o CEP "
-                "informado e tente novamente."
+            return erro_cadastro(
+                "Não foi possível validar e localizar este CEP. Confira os números e tente novamente."
             )
 
         # -------------------------------------------------
         # SALVAMENTO
         # -------------------------------------------------
 
-        conexao = sqlite3.connect(
-            CAMINHO_BANCO,
-            timeout=10
-        )
-
+        conexao = sqlite3.connect(CAMINHO_BANCO, timeout=10)
         cursor = conexao.cursor()
 
         try:
-
             cursor.execute("""
                 INSERT INTO usuarios (
                     nome,
@@ -734,27 +750,33 @@ def cadastro():
                 latitude,
                 longitude
             ))
-
             conexao.commit()
 
         except sqlite3.IntegrityError:
-
+            conexao.rollback()
             cursor.close()
-
             conexao.close()
+            return erro_cadastro(
+                "Este e-mail já está cadastrado. Utilize outro endereço ou entre na sua conta."
+            )
 
-            return (
-                "Este e-mail já está cadastrado."
+        except sqlite3.Error:
+            conexao.rollback()
+            cursor.close()
+            conexao.close()
+            return erro_cadastro(
+                "Não foi possível concluir o cadastro agora. Tente novamente."
             )
 
         cursor.close()
-
         conexao.close()
 
         return redirect("/login")
 
     return render_template(
-        "cadastro.html"
+        "cadastro.html",
+        erro=None,
+        formulario={}
     )
 
 
@@ -1697,36 +1719,66 @@ def post_pet():
 )
 def avistar(id_pet):
 
+    if "usuario_id" not in session:
+        return redirect("/login")
+
+    conexao = sqlite3.connect(
+        CAMINHO_BANCO,
+        timeout=10
+    )
+
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+        SELECT id
+        FROM pets
+        WHERE id = ?
+        AND status = 'Perdido'
+    """, (id_pet,))
+
+    pet = cursor.fetchone()
+
+    cursor.close()
+    conexao.close()
+
+    if not pet:
+        return redirect("/feed")
+
     if request.method == "POST":
 
-        local = request.form[
-            "local"
-        ].strip()
+        local = request.form.get(
+            "local", ""
+        ).strip()
 
-        observacao = request.form[
-            "observacao"
-        ].strip()
+        observacao = request.form.get(
+            "observacao", ""
+        ).strip()
 
-        nome_contato = request.form[
-            "nome_contato"
-        ].strip()
+        nome_contato = request.form.get(
+            "nome_contato", ""
+        ).strip()
 
-        telefone_contato = (
-            request.form[
-                "telefone_contato"
-            ].strip()
-        )
+        telefone_contato = request.form.get(
+            "telefone_contato", ""
+        ).strip()
 
-        email_contato = (
-            request.form[
-                "email_contato"
-            ].strip()
-        )
+        email_contato = request.form.get(
+            "email_contato", ""
+        ).strip()
 
-        data_avistamento = (
-            datetime.now().strftime(
-                "%d/%m/%Y"
-            )
+        if not all((
+            local,
+            observacao,
+            nome_contato,
+            telefone_contato
+        )):
+            return (
+                "Preencha o endereço, a descrição, "
+                "o nome e o telefone para enviar."
+            ), 400
+
+        data_avistamento = datetime.now().strftime(
+            "%d/%m/%Y"
         )
 
         conexao = sqlite3.connect(
@@ -1736,35 +1788,51 @@ def avistar(id_pet):
 
         cursor = conexao.cursor()
 
-        cursor.execute("""
-            INSERT INTO avistamentos (
-                pet_id,
+        try:
+            cursor.execute("""
+                INSERT INTO avistamentos (
+                    pet_id,
+                    local,
+                    observacao,
+                    data_avistamento,
+                    nome_contato,
+                    telefone_contato,
+                    email_contato,
+                    usuario_id
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                id_pet,
                 local,
                 observacao,
                 data_avistamento,
                 nome_contato,
                 telefone_contato,
-                email_contato
+                email_contato,
+                session["usuario_id"]
+            ))
+
+            conexao.commit()
+
+        except sqlite3.Error as erro:
+            conexao.rollback()
+
+            print(
+                "[AVISTAMENTO] Erro ao salvar:",
+                erro
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (
-            id_pet,
-            local,
-            observacao,
-            data_avistamento,
-            nome_contato,
-            telefone_contato,
-            email_contato
-        ))
 
-        conexao.commit()
+            return (
+                "Não foi possível enviar o avistamento. "
+                "Tente novamente."
+            ), 500
 
-        cursor.close()
-
-        conexao.close()
+        finally:
+            cursor.close()
+            conexao.close()
 
         return redirect(
-            "/feed"
+            "/meus_avistamentos?aba=enviados"
         )
 
     return render_template(
@@ -1777,16 +1845,20 @@ def avistar(id_pet):
 # CENTRAL DE AVISTAMENTOS
 # =========================================================
 
-@app.route(
-    "/meus_avistamentos"
-)
+@app.route("/meus_avistamentos")
 def meus_avistamentos():
 
     if "usuario_id" not in session:
+        return redirect("/login")
 
-        return redirect(
-            "/login"
-        )
+    usuario_id = session["usuario_id"]
+
+    aba = request.args.get(
+        "aba", "recebidos"
+    )
+
+    if aba not in ("recebidos", "enviados"):
+        aba = "recebidos"
 
     conexao = sqlite3.connect(
         CAMINHO_BANCO,
@@ -1795,9 +1867,13 @@ def meus_avistamentos():
 
     cursor = conexao.cursor()
 
+    # Avistamentos feitos por outras pessoas
+    # sobre os pets do usuário.
     cursor.execute("""
         SELECT
+            avistamentos.id,
             pets.nome,
+            pets.imagem,
             avistamentos.local,
             avistamentos.observacao,
             avistamentos.data_avistamento,
@@ -1809,79 +1885,39 @@ def meus_avistamentos():
             ON avistamentos.pet_id = pets.id
         WHERE pets.usuario_id = ?
         ORDER BY avistamentos.id DESC
-    """, (
-        session["usuario_id"],
-    ))
+    """, (usuario_id,))
 
-    avistamentos_brutos = (
-        cursor.fetchall()
-    )
+    recebidos = cursor.fetchall()
+
+    # Avistamentos enviados pelo usuário logado.
+    cursor.execute("""
+        SELECT
+            avistamentos.id,
+            pets.nome,
+            pets.imagem,
+            avistamentos.local,
+            avistamentos.observacao,
+            avistamentos.data_avistamento,
+            avistamentos.nome_contato,
+            avistamentos.telefone_contato,
+            avistamentos.email_contato
+        FROM avistamentos
+        INNER JOIN pets
+            ON avistamentos.pet_id = pets.id
+        WHERE avistamentos.usuario_id = ?
+        ORDER BY avistamentos.id DESC
+    """, (usuario_id,))
+
+    enviados = cursor.fetchall()
 
     cursor.close()
-
     conexao.close()
-
-    # -------------------------------------------------
-    # FORMATAÇÃO DOS TELEFONES
-    # -------------------------------------------------
-
-    avistamentos_formatados = []
-
-    for aviso in avistamentos_brutos:
-
-        aviso_lista = list(
-            aviso
-        )
-
-        telefone_bruto = str(
-            aviso_lista[5]
-        ).strip()
-
-        telefone_limpo = re.sub(
-            r"\D",
-            "",
-            telefone_bruto
-        )
-
-        if len(
-            telefone_limpo
-        ) == 11:
-
-            telefone_formatado = (
-                f"({telefone_limpo[:2]}) "
-                f"{telefone_limpo[2:7]}-"
-                f"{telefone_limpo[7:]}"
-            )
-
-        elif len(
-            telefone_limpo
-        ) == 10:
-
-            telefone_formatado = (
-                f"({telefone_limpo[:2]}) "
-                f"{telefone_limpo[2:6]}-"
-                f"{telefone_limpo[6:]}"
-            )
-
-        else:
-
-            telefone_formatado = (
-                telefone_bruto
-            )
-
-        aviso_lista[5] = (
-            telefone_formatado
-        )
-
-        avistamentos_formatados.append(
-            aviso_lista
-        )
 
     return render_template(
         "meus_avistamentos.html",
-        avistamentos=(
-            avistamentos_formatados
-        )
+        recebidos=recebidos,
+        enviados=enviados,
+        aba=aba
     )
 
 

@@ -1,10 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Central de Avistamentos - BingoLú</title>
@@ -12,193 +11,298 @@
     <link rel="stylesheet"
           href="{{ url_for('static', filename='style.css') }}">
 
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='avistamentos-central.css') }}">
 </head>
 
-<body class="pagina-interna pagina-avistamentos">
+<body class="pagina-interna pagina-central-avistamentos">
 
 <nav class="navbar">
-
     <div class="navbar-conteudo">
 
         <h1>BingoLú Pets</h1>
 
         <div class="menu">
-
-            <a href="/feed">
-                Feed
-            </a>
-
-            <a href="/meus_posts">
-                Meus Pets
-            </a>
-
-            <a href="/meus_avistamentos" class="ativo">
-                Avistamentos
-            </a>
-
-            <a href="/encontrados">
-                Encontrados
-            </a>
-
-            <a href="/post_pet">
-                Nova Postagem
-            </a>
-
-            <a href="/logout">
-                Sair
-            </a>
-
+            <a href="/feed">Feed</a>
+            <a href="/meus_posts">Meus Pets</a>
+            <a href="/meus_avistamentos" class="ativo">Avistamentos</a>
+            <a href="/encontrados">Encontrados</a>
+            <a href="/post_pet">Nova Postagem</a>
+            <a href="/logout">Sair</a>
         </div>
 
     </div>
-
 </nav>
 
-<div class="cabecalho-avistamentos">
+<main class="central-container">
 
-    <h2 class="titulo-pagina">
-        Central de Avistamentos
-    </h2>
+    <header class="central-cabecalho">
 
-    <p class="subtitulo">
-        Aqui você recebe informações enviadas pela comunidade
-        sobre os animais cadastrados por você.
-    </p>
+        
 
-</div>
-
-<div class="feed-container">
-
-{% if avistamentos %}
-
-    {% for aviso in avistamentos %}
-
-    <div class="card-avistamento">
-
-        <div class="cabecalho-avistamento">
-
-            <div>
-
-                <p class="pet-avistado">
-                    PET: {{ aviso[0] }}
-                </p>
-
-                <h2>
-                    Novo avistamento recebido
-                </h2>
-
-            </div>
-
-            <span class="status-avistamento">
-                RECEBIDO
-            </span>
-
-        </div>
-
-        <div class="mensagem-avistamento">
-
-            <p>
-                Um membro da comunidade informou ter visto
-                <strong>{{ aviso[0] }}</strong>.
-            </p>
-
-            <p>
-                <strong>📍 Local informado</strong>
-            </p>
-
-            <p>
-                {{ aviso[1] }}
-            </p>
-
-            <p>
-                <strong>💬 Observação</strong>
-            </p>
-
-            <p>
-                {{ aviso[2] }}
-            </p>
-
-        </div>
-
-        <hr>
-
-        <div class="informante">
-
-            <h3>
-                Pessoa que realizou o avistamento
-            </h3>
-
-            <p>
-                <strong>Nome:</strong>
-                {{ aviso[4] }}
-            </p>
-
-            <p>
-                <strong>Telefone:</strong>
-                <span class="telefone-mascara">
-                    {{ aviso[5] }}
-                </span>
-            </p>
-
-            <p>
-                <strong>E-mail:</strong>
-                {{ aviso[6] }}
-            </p>
-
-        </div>
-
-        <p class="data-postagem">
-            Avistamento recebido em {{ aviso[3] }}
-        </p>
-
-    </div>
-
-    {% endfor %}
-
-{% else %}
-
-    <div class="card-pet aviso-card aviso-vazio">
-
-        <h2>
-            Nenhum avistamento recebido
-        </h2>
+        <h2>Central de Avistamentos</h2>
 
         <p>
-            Quando alguém informar ter visto um dos seus pets,
-            o aviso aparecerá nesta central.
+            Acompanhe os relatos sobre seus pets e consulte
+            os avistamentos que você enviou.
         </p>
 
-    </div>
+    </header>
 
-{% endif %}
+    <nav class="abas-avistamentos">
 
-</div>
+        <a
+            href="/meus_avistamentos?aba=recebidos"
+            class="{{ 'aba-ativa' if aba == 'recebidos' else '' }}"
+        >
+            <strong>Avistamentos recebidos</strong>
+            <span>Relatos sobre seus pets</span>
+        </a>
 
-<script>
+        <a
+            href="/meus_avistamentos?aba=enviados"
+            class="{{ 'aba-ativa' if aba == 'enviados' else '' }}"
+        >
+            <strong>Meus avistamentos enviados</strong>
+            <span>Histórico dos seus relatos</span>
+        </a>
 
-    document.querySelectorAll('.telefone-mascara').forEach(function(el) {
+    </nav>
 
-        let texto = el.textContent.replace(/\D/g, '');
+    <section class="lista-avistamentos">
 
-        if (texto.length === 11) {
+        {% if aba == 'recebidos' %}
 
-            el.textContent =
-                '(' + texto.substring(0,2) + ') ' +
-                texto.substring(2,7) + '-' +
-                texto.substring(7);
+            <div class="titulo-lista-avistamentos">
+                <h3>Relatos recebidos</h3>
+                <p>
+                    Pessoas que informaram ter visto animais
+                    anunciados por você.
+                </p>
+            </div>
 
-        } else if (texto.length === 10) {
+            {% if recebidos %}
 
-            el.textContent =
-                '(' + texto.substring(0,2) + ') ' +
-                texto.substring(2,6) + '-' +
-                texto.substring(6);
+                {% for aviso in recebidos %}
 
-        }
+                    <article class="card-avistamento-central">
 
-    });
+                        <header class="cabecalho-avistamento-central">
 
-</script>
+                            <div>
+                                <span class="avistamento-status recebido">
+                                    Relato recebido
+                                </span>
+
+                                <h3>{{ aviso[1] }}</h3>
+
+                                <span class="data-avistamento">
+                                    {{ aviso[5] }}
+                                </span>
+                            </div>
+
+                            {% if aviso[2] %}
+                                <img
+                                    src="{{ url_for('static', filename='uploads/' + aviso[2]) }}"
+                                    alt="Foto de {{ aviso[1] }}"
+                                    class="foto-avistamento"
+                                    loading="lazy"
+                                >
+                            {% endif %}
+
+                        </header>
+
+                        <div class="informacao-avistamento">
+
+                            <h4>Local informado</h4>
+
+                            <p>{{ aviso[3] }}</p>
+
+                            <a
+    class="botao-maps"
+    href="https://www.google.com/maps/search/?api=1&query={{ aviso[3].split(' - Referência:')[0].replace(' - ', ', ').replace('CEP: ', '')|urlencode }}"
+    target="_blank"
+    rel="noopener noreferrer"
+>
+    📍 Abrir localização no Google Maps
+</a>
+
+                        </div>
+
+                        <div class="informacao-avistamento descricao-avistamento">
+
+                            <h4>O que foi observado</h4>
+
+                            <p>{{ aviso[4] }}</p>
+
+                        </div>
+
+                        <details class="detalhes-observador">
+
+                            <summary>
+                                Dados de quem informou
+                            </summary>
+
+                            <div class="dados-observador">
+
+                                <p>
+                                    <strong>Nome:</strong>
+                                    {{ aviso[6] }}
+                                </p>
+
+                                {% if aviso[7] %}
+                                    <p>
+                                        <strong>Telefone:</strong>
+                                        {{ aviso[7] }}
+                                    </p>
+                                {% endif %}
+
+                                {% if aviso[8] %}
+                                    <p>
+                                        <strong>E-mail:</strong>
+                                        {{ aviso[8] }}
+                                    </p>
+                                {% endif %}
+
+                            </div>
+
+                        </details>
+
+                    </article>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="central-vazia">
+                    <h3>Nenhum avistamento recebido</h3>
+                    <p>
+                        Quando alguém informar que viu um dos seus pets,
+                        o relato aparecerá aqui.
+                    </p>
+                </div>
+
+            {% endif %}
+
+        {% else %}
+
+            <div class="titulo-lista-avistamentos">
+                <h3>Meus relatos enviados</h3>
+                <p>
+                    Confira os avistamentos que você registrou no BingoLú.
+                </p>
+            </div>
+
+            {% if enviados %}
+
+                {% for aviso in enviados %}
+
+                    <article class="card-avistamento-central">
+
+                        <header class="cabecalho-avistamento-central">
+
+                            <div>
+                                <span class="avistamento-status enviado">
+                                    ✓ Recebido pelo BingoLú
+                                </span>
+
+                                <h3>{{ aviso[1] }}</h3>
+
+                                <span class="data-avistamento">
+                                    Enviado em {{ aviso[5] }}
+                                </span>
+                            </div>
+
+                            {% if aviso[2] %}
+                                <img
+                                    src="{{ url_for('static', filename='uploads/' + aviso[2]) }}"
+                                    alt="Foto de {{ aviso[1] }}"
+                                    class="foto-avistamento"
+                                    loading="lazy"
+                                >
+                            {% endif %}
+
+                        </header>
+
+                        <div class="informacao-avistamento">
+
+                            <h4>Local informado</h4>
+
+                            <p>{{ aviso[3] }}</p>
+
+                            <a
+                            class="botao-maps"
+                            href="https://www.google.com/maps/search/?api=1&query={{ aviso[3].split(' - Referência:')[0].replace(' - ', ', ').replace('CEP: ', '')|urlencode }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            📍 Abrir localização no Google Maps
+                        </a>
+
+                        <div class="informacao-avistamento descricao-avistamento">
+
+                            <h4>Descrição enviada</h4>
+
+                            <p>{{ aviso[4] }}</p>
+
+                        </div>
+
+                        <details class="detalhes-observador">
+
+                            <summary>
+                                Dados enviados para contato
+                            </summary>
+
+                            <div class="dados-observador">
+
+                                <p>
+                                    <strong>Nome:</strong>
+                                    {{ aviso[6] }}
+                                </p>
+
+                                {% if aviso[7] %}
+                                    <p>
+                                        <strong>Telefone:</strong>
+                                        {{ aviso[7] }}
+                                    </p>
+                                {% endif %}
+
+                                {% if aviso[8] %}
+                                    <p>
+                                        <strong>E-mail:</strong>
+                                        {{ aviso[8] }}
+                                    </p>
+                                {% endif %}
+
+                            </div>
+
+                        </details>
+
+                    </article>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="central-vazia">
+                    <h3>Você ainda não enviou avistamentos</h3>
+                    <p>
+                        Quando informar que viu um pet pelo Feed,
+                        o registro aparecerá neste histórico.
+                    </p>
+
+                    <a href="/feed" class="botao-ir-feed">
+                        Ir para o Feed
+                    </a>
+                </div>
+
+            {% endif %}
+
+        {% endif %}
+
+    </section>
+
+</main>
 
 </body>
 </html>

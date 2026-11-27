@@ -1,159 +1,423 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Animais Encontrados - BingoLú</title>
+    <title>Encontrados - BingoLú</title>
 
     <link rel="stylesheet"
           href="{{ url_for('static', filename='style.css') }}">
 
+    <style>
+        .encontrados-principal {
+            width: min(1400px, 94%);
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+
+        /* Cabeçalho centralizado */
+
+        .feed-cabecalho {
+            max-width: 850px;
+            margin: 32px auto 28px;
+            padding: 0 12px;
+            text-align: center;
+        }
+
+        .feed-cabecalho .titulo-pagina {
+            margin: 0 0 10px;
+            color: #542080;
+            font-size: clamp(28px, 3vw, 36px);
+            line-height: 1.2;
+        }
+
+        .feed-cabecalho .subtitulo {
+            margin: 0;
+            color: #625969;
+            font-size: 16px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .destaque-encontrados {
+            display: inline-block;
+            margin-bottom: 10px;
+            padding: 6px 13px;
+            border-radius: 20px;
+            background: #e8f4e9;
+            color: #286b35;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        /* Grade e estrutura dos cards preservadas */
+
+        .feed-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 380px));
+            justify-content: center;
+            align-items: start;
+            gap: 24px;
+            padding-bottom: 40px;
+        }
+
+        .card-pet {
+            width: 100%;
+            min-width: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            border: 1px solid #dcebdc;
+            border-top: 4px solid #65ad70;
+            border-radius: 13px;
+            box-shadow: 0 4px 15px rgba(40, 70, 40, .09);
+        }
+
+        .imagem-pet-area {
+            width: 100%;
+            height: 260px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #e5e5e5;
+        }
+
+        .imagem-pet {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .conteudo-card {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .cabecalho-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .cabecalho-card h3 {
+            margin: 0;
+            color: #6A0DAD;
+            font-size: 24px;
+            line-height: 1.25;
+            overflow-wrap: anywhere;
+        }
+
+        .status-encontrado-card {
+            padding: 7px 12px;
+            border-radius: 20px;
+            background: #e4f5e6;
+            color: #236b32;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .descricao-pet-card {
+            padding: 15px;
+            border-left: 4px solid #6A0DAD;
+            border-radius: 7px;
+            background: #faf8fc;
+        }
+
+        .localizacao-pet-card {
+            padding: 13px 15px;
+            border-radius: 8px;
+            background: #f4f6f2;
+        }
+
+        .descricao-pet-card h4,
+        .localizacao-pet-card h4 {
+            margin: 0 0 8px;
+            color: #432451;
+            font-size: 15px;
+        }
+
+        .descricao-pet-card p,
+        .localizacao-pet-card p {
+            margin: 0;
+            color: #514b55;
+            font-size: 15px;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+            white-space: pre-line;
+        }
+
+        .detalhes-encontrado {
+            padding: 13px 0;
+            border-top: 1px solid #e9e4ec;
+            border-bottom: 1px solid #e9e4ec;
+        }
+
+        .titulo-detalhes-encontrado {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            color: #64258b;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            list-style: none;
+        }
+
+        .titulo-detalhes-encontrado::-webkit-details-marker {
+            display: none;
+        }
+
+        .titulo-detalhes-encontrado::after {
+            content: "+";
+            font-size: 22px;
+        }
+
+        .detalhes-encontrado[open]
+        .titulo-detalhes-encontrado::after {
+            content: "−";
+        }
+
+        .conteudo-detalhes-encontrado {
+            display: grid;
+            gap: 10px;
+            padding-top: 13px;
+        }
+
+        .conteudo-detalhes-encontrado p {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 0;
+            color: #514b55;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .conteudo-detalhes-encontrado strong {
+            color: #432451;
+        }
+
+        .encontrados-vazio {
+            grid-column: 1 / -1;
+            max-width: 520px;
+            margin: 12px auto;
+            padding: 24px;
+            border-radius: 12px;
+            background: #fff;
+            text-align: center;
+            border: 1px solid #dcebdc;
+            border-top: 4px solid #65ad70;
+            box-shadow: 0 3px 12px rgba(40,70,40,.07);
+        }
+
+        .encontrados-vazio h2 {
+            margin: 0 0 8px;
+            color: #432451;
+            font-size: 21px;
+        }
+
+        .encontrados-vazio p {
+            margin: 0;
+            color: #625969;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 600px) {
+            .encontrados-principal {
+                width: 94%;
+            }
+
+            .feed-cabecalho {
+                margin: 25px auto 22px;
+            }
+
+            .feed-container {
+                grid-template-columns: 1fr;
+            }
+
+            .imagem-pet-area {
+                height: 240px;
+            }
+
+            .conteudo-card {
+                padding: 16px;
+            }
+        }
+    </style>
 </head>
 
-<body class="pagina-interna pagina-encontrados">
+<body class="pagina-feed">
 
-<nav class="navbar">
+    <nav class="navbar">
 
-    <div class="navbar-conteudo">
+        <div class="navbar-conteudo">
 
-        <h1>BingoLú Pets</h1>
+            <h1>BingoLú Pets</h1>
 
-        <div class="menu">
-
-            <a href="/feed">
-                Feed
-            </a>
-
-            <a href="/meus_posts">
-                Meus Pets
-            </a>
-
-            <a href="/meus_avistamentos">
-                Avistamentos
-            </a>
-
-            <a href="/encontrados" class="ativo">
-                Encontrados
-            </a>
-
-            <a href="/post_pet">
-                Nova Postagem
-            </a>
-
-            <a href="/logout">
-                Sair
-            </a>
+            <div class="menu">
+                <a href="/feed">Feed</a>
+                <a href="/meus_posts">Meus Pets</a>
+                <a href="/meus_avistamentos">Avistamentos</a>
+                <a href="/encontrados" class="ativo">Encontrados</a>
+                <a href="/post_pet">Nova Postagem</a>
+                <a href="/logout">Sair</a>
+            </div>
 
         </div>
 
-    </div>
+    </nav>
 
-</nav>
+    <main class="encontrados-principal">
 
-<h2 class="titulo-pagina">
-    Histórico de Pets Encontrados
-</h2>
+        <header class="feed-cabecalho">
 
-<p class="subtitulo">
-    Assim que um anúncio for marcado como encontrado,
-    ele aparecerá aqui.
-</p>
+            <span class="destaque-encontrados">
+                ♥ Reencontros felizes
+            </span>
 
-<div class="submenu-meus-pets">
+            <h2 class="titulo-pagina">
+                Animais Encontrados
+            </h2>
 
-    <a href="/meus_posts">
-
-        <strong>Meus Anúncios</strong>
-
-        <span>
-            Gerencie seus anúncios
-        </span>
-
-    </a>
-
-    <a href="/encontrados" class="submenu-ativo">
-
-        <strong>Histórico de Encontrados</strong>
-
-        <span>
-            Animais encontrados
-        </span>
-
-    </a>
-
-</div>
-
-<div class="feed-container">
-
-{% if pets %}
-
-    {% for pet in pets %}
-
-    <div class="card-pet">
-
-        <img
-            src="{{ url_for('static',
-            filename='uploads/' + pet[5]) }}"
-            alt="Foto de {{ pet[1] }}"
-        >
-
-        <h2>
-            {{ pet[1] }}
-        </h2>
-
-        <p class="status encontrado">
-            ✔ Animal encontrado
-        </p>
-
-        <div class="info-pet">
-
-            <p>
-                <strong>Descrição:</strong>
-                {{ pet[2] }}
+            <p class="subtitulo">
+                Cada reencontro representa uma história que teve um final feliz.
             </p>
 
-            <p>
-                <strong>Cidade:</strong>
-                {{ pet[3] }}
-            </p>
+        </header>
 
-            <p>
-                <strong>Contato:</strong>
-                {{ pet[4] }}
-            </p>
+        <section class="feed-container">
 
-            <p class="data-postagem">
-                Publicado em {{ pet[6] }}
-            </p>
+            {% if pets %}
 
-        </div>
+                {% for pet in pets %}
 
-    </div>
+                    <article class="card-pet">
 
-    {% endfor %}
+                        <div class="imagem-pet-area">
 
-{% else %}
+                            {% if pet[5] %}
 
-    <div class="card-pet aviso-card">
+                                <img
+                                    src="{{ url_for('static', filename='uploads/' + pet[5]) }}"
+                                    alt="Foto de {{ pet[1] }}"
+                                    class="imagem-pet"
+                                    loading="lazy"
+                                >
 
-        <h2>
-            Nenhum animal encontrado
-        </h2>
+                            {% else %}
 
-        <p class="mensagem-vazia">
-            Assim que algum anúncio for encerrado,
-            ele aparecerá neste histórico.
-        </p>
+                                <img
+                                    src="{{ url_for('static', filename='img/sem-foto.png') }}"
+                                    alt="Imagem não disponível"
+                                    class="imagem-pet"
+                                    loading="lazy"
+                                >
 
-    </div>
+                            {% endif %}
 
-{% endif %}
+                        </div>
 
-</div>
+                        <div class="conteudo-card">
+
+                            <header class="cabecalho-card">
+
+                                <h3>{{ pet[1] }}</h3>
+
+                                <span class="status-encontrado-card">
+                                    ✔ Animal encontrado
+                                </span>
+
+                            </header>
+
+                            {% if pet[2] %}
+
+                                <section class="descricao-pet-card">
+
+                                    <h4>Sobre o animal</h4>
+
+                                    <p>{{ pet[2] }}</p>
+
+                                </section>
+
+                            {% endif %}
+
+                            <section class="localizacao-pet-card">
+
+                                <h4>Localização</h4>
+
+                                <p>
+                                    {{ pet[3] if pet[3] else 'Local não informado' }}
+                                </p>
+
+                            </section>
+
+                            <details class="detalhes-encontrado">
+
+                                <summary class="titulo-detalhes-encontrado">
+                                    Informações de contato e publicação
+                                </summary>
+
+                                <div class="conteudo-detalhes-encontrado">
+
+                                    {% if pet[4] %}
+
+                                        <p>
+                                            <strong>Contato:</strong>
+                                            <span>{{ pet[4] }}</span>
+                                        </p>
+
+                                    {% endif %}
+
+                                    {% if pet[6] %}
+
+                                        <p>
+                                            <strong>Publicado em:</strong>
+                                            <span>{{ pet[6] }}</span>
+                                        </p>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </details>
+
+                        </div>
+
+                    </article>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="encontrados-vazio">
+
+                    <h2>Nenhum animal encontrado</h2>
+
+                    <p>
+                        Assim que algum anúncio for marcado como encontrado,
+                        ele aparecerá neste histórico.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+    </main>
 
 </body>
 </html>

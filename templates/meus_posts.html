@@ -1,649 +1,794 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meus Posts - BingoLú</title>
+    <title>Meus Pets - BingoLú</title>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-<style>
-.bingolu-galeria-area {
-    position: relative;
-}
-
-.bingolu-icone-galeria {
-    position: absolute;
-    right: 12px;
-    top: 12px;
-    z-index: 3;
-    width: 38px;
-    height: 38px;
-    border: 0;
-    border-radius: 50%;
-    background: rgba(0,0,0,.58);
-    color: white;
-    font-size: 20px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.bingolu-icone-galeria:hover {
-    background: rgba(0,0,0,.75);
-}
-
-.bingolu-modal-galeria {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    background: rgba(0,0,0,.78);
-    backdrop-filter: blur(5px);
-    align-items: center;
-    justify-content: center;
-    padding: 25px;
-}
-
-.bingolu-modal-galeria.aberto {
-    display: flex;
-}
-
-.bingolu-modal-conteudo {
-    position: relative;
-    width: min(900px, 92vw);
-    max-height: 90vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.bingolu-modal-imagem {
-    max-width: 100%;
-    max-height: 82vh;
-    object-fit: contain;
-    border-radius: 10px;
-    background: #111;
-}
-
-.bingolu-fechar {
-    position: absolute;
-    right: -4px;
-    top: -46px;
-    border: 0;
-    background: transparent;
-    color: white;
-    font-size: 34px;
-    cursor: pointer;
-}
-
-.bingolu-seta {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 44px;
-    height: 44px;
-    border: 0;
-    border-radius: 50%;
-    background: rgba(0,0,0,.58);
-    color: white;
-    font-size: 28px;
-    cursor: pointer;
-}
-
-.bingolu-seta.esquerda {
-    left: 12px;
-}
-
-.bingolu-seta.direita {
-    right: 12px;
-}
-
-.bingolu-contador {
-    position: absolute;
-    left: 50%;
-    bottom: -34px;
-    transform: translateX(-50%);
-    color: white;
-    font-size: 14px;
-}
-
-/* Padronização estrita da Navbar para ficar idêntica ao Feed */
-.navbar {
-    padding: 18px 35px !important;
-}
-
-.navbar h1 {
-    font-family: "Comic Sans MS", "Comic Sans", cursive !important;
-    font-size: 34px !important;
-    font-weight: 700 !important;
-}
-
-.menu a {
-    font-size: 15px !important;
-    font-weight: 600 !important;
-    padding: 10px 18px !important;
-}
-
-/* Título principal sem Comic Sans */
-.pagina-meus-posts .titulo-pagina {
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
-    font-weight: 700 !important;
-}
-
-/* Alinhamento perfeito da caixa de aviso vazio */
-.pagina-meus-posts .vazio {
-    width: 100%;
-    max-width: 500px;
-    background: white;
-    padding: 35px;
-    border-radius: 15px;
-    margin: 40px auto;
-    box-shadow: 0 5px 18px rgba(0,0,0,.10);
-    text-align: center;
-}
-
-.pagina-meus-posts .vazio h2 {
-    color: #6A0DAD;
-    margin-bottom: 15px;
-    text-align: center;
-}
-
-.pagina-meus-posts .vazio p {
-    color: #666;
-    text-align: center;
-}
-</style>
-
-</head>
-
-<body class="pagina-meus-posts">
-
-<div class="navbar">
-    <h1>BingoLú</h1>
-
-    <div class="menu">
-        <a href="/feed">Feed</a>
-        <a href="/meus_posts" class="ativo">Meus Pets</a>
-        <a href="/meus_avistamentos">Avistamentos</a>
-        <a href="/encontrados">Encontrados</a>
-        <a href="/post_pet">Nova Postagem</a>
-        <a href="/logout">Sair</a>
-    </div>
-</div>
-
-<h2 class="titulo-pagina">Meus Pets</h2>
-
-<p class="subtitulo">
-    Gerencie os anúncios de animais cadastrados por você.
-</p>
-
-<div class="feed-container">
-
-{% if pets %}
-
-    {% for pet in pets %}
-
-    <article class="card-pet">
-
-        <div class="bingolu-galeria-area">
-
-            <button
-                type="button"
-                class="bingolu-icone-galeria"
-                title="Ver fotos"
-                data-abrir-galeria="{{ pet[0] }}"
-            >
-                ▧
-            </button>
-
-            <img
-                src="{{ url_for('static', filename='uploads/' + pet[5]) }}"
-                alt="Foto de {{ pet[1] }}"
-                data-principal="{{ pet[5] }}"
-            >
-
-        </div>
-
-        <div class="conteudo">
-
-            <h2>{{ pet[1] }}</h2>
-
-            <div class="status perdido">
-                Perdido
-            </div>
-
-            <div class="info-pet">
-
-                <p>
-                    <strong>Cidade:</strong>
-                    {{ pet[3] }}
-                </p>
-
-                <p>
-                    <strong>Descrição:</strong>
-                    {{ pet[2] }}
-                </p>
-
-                <p>
-                    <strong>Contato:</strong>
-                    {{ pet[4] }}
-                </p>
-
-            </div>
-
-            <div class="acoes">
-
-                <a
-                    href="/editar_post/{{ pet[0] }}"
-                    class="botao-roxo"
-                >
-                    Editar
-                </a>
-
-                <a
-                    href="/marcar_encontrado/{{ pet[0] }}"
-                    class="botao-verde"
-                >
-                    Marcar como encontrado
-                </a>
-
-                <a
-                    href="/excluir_post/{{ pet[0] }}"
-                    class="botao-vermelho"
-                    onclick="return confirm('Deseja realmente excluir este anúncio?');"
-                >
-                    Excluir
-                </a>
-
-            </div>
-
-            <div class="data-postagem">
-                Publicado em {{ pet[6] }}
-            </div>
-
-        </div>
-
-    </article>
-
-
-    <div
-        id="modal-galeria-{{ pet[0] }}"
-        class="bingolu-modal-galeria"
-        data-pet-id="{{ pet[0] }}"
-    >
-
-        <div class="bingolu-modal-conteudo">
-
-            <button
-                type="button"
-                class="bingolu-fechar"
-                data-fechar-galeria="{{ pet[0] }}"
-            >
-                ×
-            </button>
-
-            <button
-                type="button"
-                class="bingolu-seta esquerda"
-                data-mudar-galeria="{{ pet[0] }}"
-                data-direcao="-1"
-            >
-                ‹
-            </button>
-
-            <img
-                id="imagem-galeria-{{ pet[0] }}"
-                class="bingolu-modal-imagem"
-                data-principal="{{ pet[5] }}"
-                src="{{ url_for('static', filename='uploads/' + pet[5]) }}"
-                alt="Galeria de {{ pet[1] }}"
-            >
-
-            <button
-                type="button"
-                class="bingolu-seta direita"
-                data-mudar-galeria="{{ pet[0] }}"
-                data-direcao="1"
-            >
-                ›
-            </button>
-
-            <div
-                id="contador-galeria-{{ pet[0] }}"
-                class="bingolu-contador"
-            >
-                1/1
-            </div>
-
-        </div>
-
-    </div>
-
-    {% endfor %}
-
-{% else %}
-
-    <div class="vazio">
-
-        <h2>
-            Você ainda não possui anúncios
-        </h2>
-
-        <p>
-            Cadastre um animal perdido para começar.
-        </p>
-
-    </div>
-
-{% endif %}
-
-</div>
-
-
-<script>
-
-window.bingoluGalerias = {};
-
-
-function abrirGaleria(idPet) {
-
-    const modal = document.getElementById(
-        'modal-galeria-' + idPet
-    );
-
-    const imagem = document.getElementById(
-        'imagem-galeria-' + idPet
-    );
-
-    if (!modal || !imagem) {
-        return;
-    }
-
-    modal.classList.add('aberto');
-
-    fetch('/fotos_pet/' + idPet)
-
-        .then(response => {
-
-            if (!response.ok) {
-                throw new Error(
-                    'Falha ao carregar fotos'
-                );
+    <style>
+        /* Cabeçalho e grade no padrão do Feed */
+
+        .meus-pets-principal {
+            width: min(1400px, 94%);
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+
+        .feed-cabecalho {
+            text-align: center;
+            margin: 30px auto 20px;
+        }
+
+        .feed-cabecalho .titulo-pagina {
+            margin: 0 0 7px;
+            font-size: clamp(28px, 3vw, 36px);
+        }
+
+        .feed-cabecalho .subtitulo {
+            font-size: 16px;
+            line-height: 1.45;
+        }
+
+        .feed-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 380px));
+            justify-content: center;
+            align-items: start;
+            gap: 24px;
+            padding-bottom: 40px;
+        }
+
+        /* Imagem inteira, sem cortes */
+
+        .imagem-pet-area {
+            position: relative;
+            width: 100%;
+            height: 260px;
+            background: #e5e5e5;
+        }
+
+        .imagem-pet {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Conteúdo no mesmo padrão do Feed */
+
+        .conteudo-card {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .cabecalho-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .cabecalho-card h3 {
+            margin: 0;
+            color: #6A0DAD;
+            font-size: 24px;
+            line-height: 1.25;
+        }
+
+        .identificador-anuncio {
+            padding: 6px 11px;
+            border-radius: 20px;
+            background: #f0e7fa;
+            color: #6A0DAD;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .caracteristicas-pet {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .caracteristica-pet {
+            padding: 7px 10px;
+            border-radius: 7px;
+            background: #f5f1f8;
+            color: #493653;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .descricao-pet-card {
+            padding: 15px;
+            border-left: 4px solid #6A0DAD;
+            border-radius: 7px;
+            background: #faf8fc;
+        }
+
+        .descricao-pet-card h4,
+        .localizacao-pet-card h4 {
+            margin: 0 0 8px;
+            color: #432451;
+            font-size: 15px;
+        }
+
+        .descricao-pet-card p,
+        .localizacao-pet-card p {
+            margin: 0;
+            color: #514b55;
+            font-size: 15px;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+            white-space: pre-line;
+        }
+
+        .localizacao-pet-card {
+            padding: 13px 15px;
+            border-radius: 8px;
+            background: #f4f6f2;
+        }
+
+        .detalhes-sanfola {
+            padding: 13px 0;
+            border-top: 1px solid #e9e4ec;
+            border-bottom: 1px solid #e9e4ec;
+        }
+
+        .titulo-sanfola {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            color: #64258b;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            list-style: none;
+        }
+
+        .titulo-sanfola::-webkit-details-marker {
+            display: none;
+        }
+
+        .titulo-sanfola::after {
+            content: "+";
+            font-size: 22px;
+        }
+
+        .detalhes-sanfola[open] .titulo-sanfola::after {
+            content: "−";
+        }
+
+        .conteudo-sanfola {
+            display: grid;
+            gap: 10px;
+            padding-top: 13px;
+        }
+
+        .conteudo-sanfola p {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 0;
+            color: #514b55;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .conteudo-sanfola strong {
+            color: #432451;
+        }
+
+        /* Ações de gerenciamento: maiores que o botão do Feed */
+
+        .acoes-meus-pets {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 3px;
+        }
+
+        .acoes-meus-pets a {
+            min-height: 46px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 12px;
+            border-radius: 8px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 14px;
+            line-height: 1.3;
+            font-weight: 700;
+            transition: background .2s ease;
+        }
+
+        .acao-editar {
+            background: #6A0DAD;
+            color: #fff;
+        }
+
+        .acao-editar:hover {
+            background: #52088a;
+        }
+
+        .acao-encontrado {
+            background: #e8f4e9;
+            color: #286b35;
+        }
+
+        .acao-encontrado:hover {
+            background: #d7ead9;
+        }
+
+        .acao-excluir {
+            grid-column: 1 / -1;
+            min-height: 42px !important;
+            background: #fff0ed;
+            color: #a93226;
+        }
+
+        .acao-excluir:hover {
+            background: #fce0dc;
+        }
+
+        .meus-pets-vazio {
+            grid-column: 1 / -1;
+            max-width: 520px;
+            margin: 12px auto;
+            padding: 24px;
+            border-radius: 12px;
+            background: #fff;
+            text-align: center;
+            box-shadow: 0 3px 12px rgba(40,20,55,.07);
+        }
+
+        .meus-pets-vazio h2 {
+            margin: 0 0 8px;
+            color: #432451;
+            font-size: 21px;
+        }
+
+        .meus-pets-vazio p {
+            margin: 0;
+            color: #625969;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        /* Galeria */
+
+        .galeria-overlay[hidden] {
+            display: none !important;
+        }
+
+        .galeria-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(15, 10, 20, .88);
+        }
+
+        .galeria-modal {
+            position: relative;
+            width: min(900px, 94vw);
+            height: min(760px, 88vh);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .galeria-imagem-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .galeria-imagem-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 9px;
+        }
+
+        .galeria-fechar,
+        .galeria-controle {
+            position: absolute;
+            z-index: 2;
+            border: 0;
+            border-radius: 50%;
+            background: rgba(0,0,0,.65);
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .galeria-fechar {
+            top: 0;
+            right: 0;
+            width: 43px;
+            height: 43px;
+            font-size: 29px;
+        }
+
+        .galeria-controle {
+            top: 50%;
+            width: 45px;
+            height: 45px;
+            transform: translateY(-50%);
+            font-size: 30px;
+        }
+
+        .galeria-anterior {
+            left: 10px;
+        }
+
+        .galeria-proxima {
+            right: 10px;
+        }
+
+        .galeria-contador {
+            position: absolute;
+            bottom: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .meus-pets-principal {
+                width: 94%;
             }
 
-            return response.json();
+            .feed-container {
+                grid-template-columns: 1fr;
+            }
 
-        })
+            .imagem-pet-area {
+                height: 240px;
+            }
 
-        .then(dados => {
+            .conteudo-card {
+                padding: 16px;
+            }
 
-            const fotos =
-                dados &&
-                Array.isArray(dados.fotos)
-                    ? dados.fotos
-                    : [];
+            .acoes-meus-pets a {
+                font-size: 13px;
+                padding: 9px 7px;
+            }
 
-            window.bingoluGalerias[idPet] = {
+            .galeria-modal {
+                height: 75vh;
+            }
+        }
 
-                fotos:
-                    fotos.length > 0
-                        ? fotos
-                        : [imagem.dataset.principal],
+        @media (prefers-reduced-motion: reduce) {
+            .acoes-meus-pets a {
+                transition: none;
+            }
+        }
+    </style>
+</head>
+
+<body class="pagina-feed">
+
+    <nav class="navbar">
+
+        <div class="navbar-conteudo">
 
-                indice: 0
-
-            };
-
-            atualizarGaleria(idPet);
-
-        })
-
-        .catch(() => {
-
-            window.bingoluGalerias[idPet] = {
-
-                fotos: [
-                    imagem.dataset.principal
-                ],
-
-                indice: 0
-
-            };
-
-            atualizarGaleria(idPet);
-
-        });
-
-}
-
-
-function atualizarGaleria(idPet) {
-
-    const dados =
-        window.bingoluGalerias[idPet];
-
-    if (!dados || !dados.fotos.length) {
-        return;
-    }
-
-    const imagem =
-        document.getElementById(
-            'imagem-galeria-' + idPet
-        );
-
-    const contador =
-        document.getElementById(
-            'contador-galeria-' + idPet
-        );
-
-    if (!imagem || !contador) {
-        return;
-    }
-
-    imagem.src =
-        dados.fotos[dados.indice];
-
-    contador.textContent =
-        (dados.indice + 1) +
-        '/' +
-        dados.fotos.length;
-
-}
-
-
-function mudarFotoGaleria(
-    idPet,
-    direcao
-) {
-
-    const dados =
-        window.bingoluGalerias[idPet];
-
-    if (
-        !dados ||
-        dados.fotos.length <= 1
-    ) {
-        return;
-    }
-
-    dados.indice =
-        (
-            dados.indice +
-            direcao +
-            dados.fotos.length
-        ) %
-        dados.fotos.length;
-
-    atualizarGaleria(idPet);
-
-}
-
-
-function fecharGaleria(idPet) {
-
-    const modal =
-        document.getElementById(
-            'modal-galeria-' + idPet
-        );
-
-    if (!modal) {
-        return;
-    }
-
-    modal.classList.remove('aberto');
-
-}
-
-
-document.addEventListener(
-    'DOMContentLoaded',
-    function () {
-
-        document
-            .querySelectorAll(
-                '[data-abrir-galeria]'
-            )
-            .forEach(botao => {
-
-                botao.addEventListener(
-                    'click',
-                    function () {
-
-                        const idPet =
-                            this.dataset.abrirGaleria;
-
-                        abrirGaleria(idPet);
-
-                    }
-                );
-
-            });
-
-
-        document
-            .querySelectorAll(
-                '[data-fechar-galeria]'
-            )
-            .forEach(botao => {
-
-                botao.addEventListener(
-                    'click',
-                    function () {
-
-                        const idPet =
-                            this.dataset.fecharGaleria;
-
-                        fecharGaleria(idPet);
-
-                    }
-                );
-
-            });
-
-
-        document
-            .querySelectorAll(
-                '[data-mudar-galeria]'
-            )
-            .forEach(botao => {
-
-                botao.addEventListener(
-                    'click',
-                    function () {
-
-                        const idPet =
-                            this.dataset.mudarGaleria;
-
-                        const direcao =
-                            Number(
-                                this.dataset.direcao
-                            );
-
-                        mudarFotoGaleria(
-                            idPet,
-                            direcao
-                        );
-
-                    }
-                );
-
-            });
-
-
-        document
-            .querySelectorAll(
-                '.bingolu-modal-galeria'
-            )
-            .forEach(modal => {
-
-                modal.addEventListener(
-                    'click',
-                    function (event) {
+            <h1>BingoLú Pets</h1>
+
+            <div class="menu">
+                <a href="/feed">Feed</a>
+                <a href="/meus_posts" class="ativo">Meus Pets</a>
+                <a href="/meus_avistamentos">Avistamentos</a>
+                <a href="/encontrados">Encontrados</a>
+                <a href="/post_pet">Nova Postagem</a>
+                <a href="/logout">Sair</a>
+            </div>
+
+        </div>
+
+    </nav>
+
+    <main class="meus-pets-principal">
+
+        <header class="feed-cabecalho">
+            <h2 class="titulo-pagina">Meus Pets</h2>
+            <p class="subtitulo">
+                Gerencie os anúncios de animais cadastrados por você.
+            </p>
+        </header>
+
+        <section class="feed-container">
+
+            {% if pets %}
+
+                {% for pet in pets %}
+
+                    <article class="card-pet">
+
+                        <div class="imagem-pet-area">
+
+                            <img
+                                src="{% if pet[5] %}{{ url_for('static', filename='uploads/' + pet[5]) }}{% else %}{{ url_for('static', filename='img/sem-foto.png') }}{% endif %}"
+                                alt="Foto de {{ pet[1] }}"
+                                class="imagem-pet"
+                                loading="lazy"
+                            >
+
+                            <button
+                                type="button"
+                                class="botao-galeria-pet"
+                                data-galeria-id="{{ pet[0] }}"
+                                aria-label="Ver galeria de fotos de {{ pet[1] }}"
+                                title="Ver fotos"
+                            >▧</button>
+
+                        </div>
+
+                        <div class="conteudo-card">
+
+                            <header class="cabecalho-card">
+
+                                <h3>{{ pet[1] }}</h3>
+
+                                <span class="identificador-anuncio proprio">
+                                    Seu anúncio
+                                </span>
+
+                            </header>
+
+                            <div class="caracteristicas-pet">
+
+                                {% if pet|length > 9 and pet[9] %}
+                                    <span class="caracteristica-pet">
+                                        {% if pet[9] == 'Canino' %}
+                                            Cão
+                                        {% elif pet[9] == 'Felino' %}
+                                            Gato
+                                        {% elif pet[9] == 'Ave' %}
+                                            Ave
+                                        {% else %}
+                                            {{ pet[9] }}
+                                        {% endif %}
+                                    </span>
+                                {% endif %}
+
+                                {% if pet|length > 10 and pet[10] %}
+                                    <span class="caracteristica-pet">
+                                        {{ pet[10] }}
+                                    </span>
+                                {% endif %}
+
+                                {% if pet|length > 11 and pet[11] %}
+                                    <span class="caracteristica-pet">
+                                        Porte {{ pet[11] }}
+                                    </span>
+                                {% endif %}
+
+                                {% if pet|length > 14 and pet[14] %}
+                                    <span class="caracteristica-pet">
+                                        {{ pet[14] }}
+                                    </span>
+                                {% endif %}
+
+                            </div>
+
+                            {% if pet[2] %}
+                                <section class="bloco-card descricao-pet-card">
+                                    <h4>Sobre o animal</h4>
+                                    <p>{{ pet[2] }}</p>
+                                </section>
+                            {% endif %}
+
+                            <section class="bloco-card localizacao-pet-card">
+                                <h4>Localização</h4>
+                                <p>
+                                    {{ pet[3] if pet[3] else 'Local não informado' }}
+                                </p>
+                            </section>
+
+                            <details class="detalhes-sanfola">
+
+                                <summary class="titulo-sanfola">
+                                    Informações de contato e publicação
+                                </summary>
+
+                                <div class="conteudo-sanfola">
+
+                                    {% if pet|length > 15 and pet[15] %}
+                                        <p>
+                                            <strong>Responsável</strong>
+                                            <span>{{ pet[15] }}</span>
+                                        </p>
+                                    {% endif %}
+
+                                    {% if pet[4] %}
+                                        <p>
+                                            <strong>Contato</strong>
+                                            <span>{{ pet[4] }}</span>
+                                        </p>
+                                    {% endif %}
+
+                                    {% if pet[6] %}
+                                        <p>
+                                            <strong>Publicado em</strong>
+                                            <span>{{ pet[6] }}</span>
+                                        </p>
+                                    {% endif %}
+
+                                </div>
+
+                            </details>
+
+                            <div class="acoes-meus-pets">
+
+                                <a
+                                    href="/editar_post/{{ pet[0] }}"
+                                    class="acao-editar"
+                                >
+                                    Editar
+                                </a>
+
+                                <a
+                                    href="/marcar_encontrado/{{ pet[0] }}"
+                                    class="acao-encontrado"
+                                >
+                                    Marcar como encontrado
+                                </a>
+
+                                <a
+                                    href="/excluir_post/{{ pet[0] }}"
+                                    class="acao-excluir"
+                                    onclick="return confirm('Deseja realmente excluir este anúncio?');"
+                                >
+                                    Excluir anúncio
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="meus-pets-vazio">
+                    <h2>Você ainda não possui anúncios</h2>
+                    <p>Cadastre um animal perdido para começar.</p>
+                </div>
+
+            {% endif %}
+
+        </section>
+
+    </main>
+
+    <!-- GALERIA -->
+
+    <div id="galeria-overlay" class="galeria-overlay" hidden>
+
+        <div
+            class="galeria-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Galeria de fotos do animal"
+        >
+
+            <button
+                type="button"
+                id="galeria-fechar"
+                class="galeria-fechar"
+                aria-label="Fechar galeria"
+            >×</button>
+
+            <button
+                type="button"
+                id="galeria-anterior"
+                class="galeria-controle galeria-anterior"
+                aria-label="Foto anterior"
+            >‹</button>
+
+            <div class="galeria-imagem-container">
+                <img
+                    id="galeria-imagem"
+                    src=""
+                    alt="Foto do animal"
+                >
+            </div>
+
+            <button
+                type="button"
+                id="galeria-proxima"
+                class="galeria-controle galeria-proxima"
+                aria-label="Próxima foto"
+            >›</button>
+
+            <div id="galeria-contador" class="galeria-contador">
+                1 / 1
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const overlay = document.getElementById("galeria-overlay");
+            const imagem = document.getElementById("galeria-imagem");
+            const contador = document.getElementById("galeria-contador");
+
+            const botaoFechar = document.getElementById("galeria-fechar");
+            const botaoAnterior = document.getElementById("galeria-anterior");
+            const botaoProxima = document.getElementById("galeria-proxima");
+
+            let fotosAtuais = [];
+            let indiceAtual = 0;
+
+            function normalizarFotos(resposta) {
+
+                let lista = Array.isArray(resposta)
+                    ? resposta
+                    : (
+                        resposta &&
+                        Array.isArray(resposta.fotos)
+                            ? resposta.fotos
+                            : []
+                    );
+
+                return lista
+                    .filter(foto =>
+                        typeof foto === "string" &&
+                        foto.trim() !== ""
+                    )
+                    .map(foto => {
 
                         if (
-                            event.target === this
+                            foto.startsWith("/") ||
+                            foto.startsWith("http")
                         ) {
-
-                            fecharGaleria(
-                                this.dataset.petId
-                            );
-
+                            return foto;
                         }
 
+                        return "/static/uploads/" + foto;
+                    });
+            }
+
+            function atualizarGaleria() {
+
+                if (!fotosAtuais.length) return;
+
+                imagem.src = fotosAtuais[indiceAtual];
+
+                contador.textContent =
+                    (indiceAtual + 1) + " / " + fotosAtuais.length;
+
+                botaoAnterior.style.display =
+                    fotosAtuais.length > 1 ? "flex" : "none";
+
+                botaoProxima.style.display =
+                    fotosAtuais.length > 1 ? "flex" : "none";
+            }
+
+            async function abrirGaleria(idPet) {
+
+                try {
+
+                    const resposta = await fetch("/fotos_pet/" + idPet);
+
+                    if (!resposta.ok) {
+                        throw new Error("Não foi possível carregar as fotos.");
                     }
-                );
+
+                    const dados = await resposta.json();
+
+                    fotosAtuais = normalizarFotos(dados);
+
+                    if (!fotosAtuais.length) return;
+
+                    indiceAtual = 0;
+
+                    atualizarGaleria();
+
+                    overlay.hidden = false;
+                    document.body.style.overflow = "hidden";
+
+                } catch (erro) {
+
+                    console.error("Erro ao abrir galeria:", erro);
+
+                }
+            }
+
+            function fecharGaleria() {
+
+                overlay.hidden = true;
+                document.body.style.overflow = "";
+                imagem.src = "";
+                fotosAtuais = [];
+                indiceAtual = 0;
+            }
+
+            function fotoAnterior() {
+
+                if (!fotosAtuais.length) return;
+
+                indiceAtual--;
+
+                if (indiceAtual < 0) {
+                    indiceAtual = fotosAtuais.length - 1;
+                }
+
+                atualizarGaleria();
+            }
+
+            function fotoProxima() {
+
+                if (!fotosAtuais.length) return;
+
+                indiceAtual++;
+
+                if (indiceAtual >= fotosAtuais.length) {
+                    indiceAtual = 0;
+                }
+
+                atualizarGaleria();
+            }
+
+            document
+                .querySelectorAll("[data-galeria-id]")
+                .forEach(function (elemento) {
+
+                    elemento.addEventListener("click", function () {
+
+                        abrirGaleria(elemento.dataset.galeriaId);
+
+                    });
+
+                });
+
+            botaoFechar.addEventListener("click", fecharGaleria);
+            botaoAnterior.addEventListener("click", fotoAnterior);
+            botaoProxima.addEventListener("click", fotoProxima);
+
+            overlay.addEventListener("click", function (evento) {
+
+                if (evento.target === overlay) {
+                    fecharGaleria();
+                }
 
             });
 
-    }
-);
+            document.addEventListener("keydown", function (evento) {
 
+                if (overlay.hidden) return;
 
-document.addEventListener(
-    'keydown',
-    function (event) {
+                if (evento.key === "Escape") fecharGaleria();
+                if (evento.key === "ArrowLeft") fotoAnterior();
+                if (evento.key === "ArrowRight") fotoProxima();
 
-        const modal =
-            document.querySelector(
-                '.bingolu-modal-galeria.aberto'
-            );
+            });
 
-        if (!modal) {
-            return;
-        }
-
-        const idPet =
-            modal.dataset.petId;
-
-        if (event.key === 'Escape') {
-
-            fecharGaleria(idPet);
-
-        }
-
-        if (event.key === 'ArrowLeft') {
-
-            mudarFotoGaleria(
-                idPet,
-                -1
-            );
-
-        }
-
-        if (event.key === 'ArrowRight') {
-
-            mudarFotoGaleria(
-                idPet,
-                1
-            );
-
-        }
-
-    }
-);
-
-</script>
+        });
+    </script>
 
 </body>
 </html>

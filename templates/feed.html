@@ -12,69 +12,36 @@
 
 <body class="pagina-feed">
 
-    <!-- =====================================================
-         NAVBAR
-    ====================================================== -->
-
     <nav class="navbar">
-
         <div class="navbar-conteudo">
 
             <h1>BingoLú Pets</h1>
 
             <div class="menu">
-
                 <a href="/feed">Feed</a>
-
                 <a href="/meus_posts">Meus Pets</a>
-
-                <a href="/meus_avistamentos">
-                    Avistamentos
-                </a>
-
-                <a href="/encontrados">
-                    Encontrados
-                </a>
-
-                <a href="/post_pet">
-                    Nova Postagem
-                </a>
-
-                <a href="/logout">
-                    Sair
-                </a>
-
+                <a href="/meus_avistamentos">Avistamentos</a>
+                <a href="/encontrados">Encontrados</a>
+                <a href="/post_pet">Nova Postagem</a>
+                <a href="/logout">Sair</a>
             </div>
 
         </div>
-
     </nav>
-
-
-    <!-- =====================================================
-         CABEÇALHO DO FEED (SEM CARD/POLUIÇÃO VISUAL)
-    ====================================================== -->
 
     <main class="feed-principal">
 
-        <div style="text-align: center; margin: 35px auto 20px; padding: 0 15px;">
+        <!-- CABEÇALHO -->
+        <header class="feed-cabecalho">
+            <h2 class="titulo-pagina">Animais perdidos</h2>
 
-            <h2 class="titulo-pagina" style="margin-bottom: 8px;">
-                Animais perdidos
-            </h2>
-
-            <p class="subtitulo" style="margin: 0;">
+            <p class="subtitulo">
                 Encontre animais perdidos próximos a você ou veja anúncios da sua região.
             </p>
+        </header>
 
-        </div>
-
-
-        <!-- =================================================
-             ABAS: ALERTAS / REGIONAL (ORDEM INVERTIDA)
-        ================================================== -->
-
-        <nav class="abas-feed">
+        <!-- ABAS -->
+        <nav class="abas-feed" aria-label="Tipo de feed">
 
             <a
                 href="/feed?aba=alertas{% if especie_ativa %}&especie={{ especie_ativa }}{% endif %}"
@@ -92,11 +59,8 @@
 
         </nav>
 
-        <!-- =================================================
-             FILTROS DE ANIMAL
-        ================================================== -->
-
-        <section class="filtros-especie">
+        <!-- FILTROS -->
+        <section class="filtros-especie" aria-label="Filtrar por espécie">
 
             <a
                 href="/feed?aba={{ aba_ativa }}"
@@ -135,11 +99,7 @@
 
         </section>
 
-
-        <!-- =================================================
-             CARDS
-        ================================================== -->
-
+        <!-- CARDS -->
         <section class="feed-container">
 
             {% if pets %}
@@ -147,68 +107,63 @@
                 {% for pet in pets %}
 
                     {% set especie_pet = pet[9] %}
+                    {% set anuncio_proprio = session.get('usuario_id') == pet[8] %}
 
                     <article
-                        class="card-pet
-                        {% if aba_ativa == 'alertas' %}
-                            card-alerta-urgente
-                        {% endif %}"
+                        class="card-pet {% if aba_ativa == 'alertas' %}card-alerta-urgente{% endif %}"
                         data-pet-id="{{ pet[0] }}"
                     >
 
-                        <!-- =================================
-                             IMAGEM
-                        ================================== -->
-
-                        <a
-                            href="#"
-                            class="imagem-pet-link"
-                            data-galeria-id="{{ pet[0] }}"
-                            aria-label="Ver fotos de {{ pet[1] }}"
-                        >
+                        <!-- IMAGEM -->
+                        <div class="imagem-pet-area">
 
                             <img
                                 src="{% if pet[5] %}{{ url_for('static', filename='uploads/' + pet[5]) }}{% else %}{{ url_for('static', filename='img/sem-foto.png') }}{% endif %}"
                                 alt="Foto de {{ pet[1] }}"
                                 class="imagem-pet"
+                                loading="lazy"
                             >
 
-                        </a>
+                            <button
+                                type="button"
+                                class="botao-galeria-pet"
+                                data-galeria-id="{{ pet[0] }}"
+                                aria-label="Ver galeria de fotos de {{ pet[1] }}"
+                                title="Ver fotos"
+                            >
+                                ▧
+                            </button>
 
+                        </div>
 
-                        <!-- =================================
-                             CONTEÚDO
-                        ================================== -->
-
+                        <!-- CONTEÚDO -->
                         <div class="conteudo-card">
 
+                            <!-- NOME E IDENTIFICAÇÃO -->
+                            <header class="cabecalho-card">
 
-                            <!-- =============================
-                                 NOME + STATUS
-                            ============================== -->
+                                <h3>{{ pet[1] }}</h3>
 
-                            <div class="cabecalho-card">
+                                {% if anuncio_proprio %}
 
-                                <h2>
-                                    {{ pet[1] }}
-                                </h2>
+                                    <span class="identificador-anuncio proprio">
+                                        Seu anúncio
+                                    </span>
 
-                                <span class="status perdido">
-                                    Perdido
-                                </span>
+                                {% else %}
 
-                            </div>
+                                    <span class="identificador-anuncio perdido">
+                                        Animal perdido
+                                    </span>
 
+                                {% endif %}
 
-                            <!-- =============================
-                                 INFORMAÇÕES PRINCIPAIS
-                            ============================== -->
+                            </header>
 
-                            <div class="info-pet">
+                            <!-- CARACTERÍSTICAS -->
+                            <div class="caracteristicas-pet">
 
-                                <p>
-                                    <strong>Animal:</strong>
-
+                                <span class="caracteristica-pet">
                                     {% if especie_pet == 'Canino' %}
                                         Cão
                                     {% elif especie_pet == 'Felino' %}
@@ -218,206 +173,105 @@
                                     {% else %}
                                         Outro
                                     {% endif %}
-                                </p>
-
+                                </span>
 
                                 {% if pet[10] %}
-
-                                    <p>
-                                        <strong>Sexo:</strong>
+                                    <span class="caracteristica-pet">
                                         {{ pet[10] }}
-                                    </p>
-
+                                    </span>
                                 {% endif %}
-
 
                                 {% if pet[11] %}
-
-                                    <p>
-                                        <strong>Porte:</strong>
-                                        {{ pet[11] }}
-                                    </p>
-
+                                    <span class="caracteristica-pet">
+                                        Porte {{ pet[11] }}
+                                    </span>
                                 {% endif %}
-
 
                                 {% if pet[14] %}
-
-                                    <p>
-                                        <strong>Idade:</strong>
+                                    <span class="caracteristica-pet">
                                         {{ pet[14] }}
-                                    </p>
-
+                                    </span>
                                 {% endif %}
-
-
-                                {% if pet[2] %}
-
-                                    <p>
-                                        <strong>Descrição:</strong>
-                                        {{ pet[2] }}
-                                    </p>
-
-                                {% endif %}
-
-
-                                {% if pet[3] %}
-
-                                    <p>
-                                        <strong>Local:</strong>
-                                        {{ pet[3] }}
-                                    </p>
-
-                                {% endif %}
-
-
-                                {% if pet[16] is not none %}
-
-                                    <p class="distancia-pet">
-
-                                        <strong>Distância:</strong>
-
-                                        A {{ pet[16] }} km de você
-
-                                    </p>
-
-                                {% endif %}
-
-
-                                {% if pet[15] %}
-
-                                    <p>
-                                        <strong>Responsável:</strong>
-                                        {{ pet[15] }}
-                                    </p>
-
-                                {% endif %}
-
-
-                                {% if pet[4] %}
-
-                                    <p>
-                                        <strong>Contato:</strong>
-                                        {{ pet[4] }}
-                                    </p>
-
-                                {% endif %}
-
-
-                                <p class="data-postagem">
-
-                                    <strong>Publicado:</strong>
-
-                                    {{ pet[6] }}
-
-                                </p>
 
                             </div>
 
+                            <!-- DESCRIÇÃO -->
+                            {% if pet[2] %}
 
-                            <!-- =================================
-                                 DETALHES
-                            ================================== -->
+                                <section class="bloco-card descricao-pet-card">
 
-                            <details class="detalhes-sanfona">
+                                    <h4>Sobre o animal</h4>
 
-                                <summary class="titulo-sanfona">
-                                    Mais informações
+                                    <p>{{ pet[2] }}</p>
+
+                                </section>
+
+                            {% endif %}
+
+                            <!-- LOCALIZAÇÃO -->
+                            <section class="bloco-card localizacao-pet-card">
+
+                                <h4>Localização</h4>
+
+                                <p>
+                                    {{ pet[3] if pet[3] else 'Local não informado' }}
+                                </p>
+
+                                {% if pet[16] is not none %}
+
+                                    <p class="distancia-pet-card">
+                                        Aproximadamente {{ pet[16] }} km de você
+                                    </p>
+
+                                {% endif %}
+
+                            </section>
+
+                            <!-- INFORMAÇÕES ADICIONAIS -->
+                            <details class="detalhes-sanfola">
+
+                                <summary class="titulo-sanfola">
+                                    Informações de contato e publicação
                                 </summary>
 
-                                <div class="conteudo-sanfona">
+                                <div class="conteudo-sanfola">
 
-                                    {% if pet[2] %}
-
+                                    {% if pet[15] %}
                                         <p>
-                                            <strong>Descrição completa:</strong>
-                                            {{ pet[2] }}
+                                            <strong>Responsável</strong>
+                                            <span>{{ pet[15] }}</span>
                                         </p>
-
                                     {% endif %}
-
-
-                                    {% if pet[3] %}
-
-                                        <p>
-                                            <strong>Local:</strong>
-                                            {{ pet[3] }}
-                                        </p>
-
-                                    {% endif %}
-
-
-                                    {% if pet[10] %}
-
-                                        <p>
-                                            <strong>Sexo:</strong>
-                                            {{ pet[10] }}
-                                        </p>
-
-                                    {% endif %}
-
-
-                                    {% if pet[11] %}
-
-                                        <p>
-                                            <strong>Porte:</strong>
-                                            {{ pet[11] }}
-                                        </p>
-
-                                    {% endif %}
-
-
-                                    {% if pet[14] %}
-
-                                        <p>
-                                            <strong>Faixa etária:</strong>
-                                            {{ pet[14] }}
-                                        </p>
-
-                                    {% endif %}
-
 
                                     {% if pet[4] %}
-
                                         <p>
-                                            <strong>Contato:</strong>
-                                            {{ pet[4] }}
+                                            <strong>Contato</strong>
+                                            <span>{{ pet[4] }}</span>
                                         </p>
+                                    {% endif %}
 
+                                    {% if pet[6] %}
+                                        <p>
+                                            <strong>Publicado em</strong>
+                                            <span>{{ pet[6] }}</span>
+                                        </p>
                                     {% endif %}
 
                                 </div>
 
                             </details>
 
+                            <!-- AÇÃO -->
+                            {% if not anuncio_proprio %}
 
-                            <hr>
+                                <a
+                                    href="/avistar/{{ pet[0] }}"
+                                    class="botao-avistar-card"
+                                >
+                                    Informar avistamento
+                                </a>
 
-
-                            <!-- =================================
-                                 AÇÃO
-                            ================================== -->
-
-                            <div class="acao-card">
-
-                                {% if session.get('usuario_id') == pet[8] %}
-
-                                    <span class="meu-anuncio">
-                                        Meu anúncio
-                                    </span>
-
-                                {% else %}
-
-                                    <a
-                                        href="/avistar/{{ pet[0] }}"
-                                        class="botao-avistar"
-                                    >
-                                        Avistar este animal
-                                    </a>
-
-                                {% endif %}
-
-                            </div>
+                            {% endif %}
 
                         </div>
 
@@ -429,9 +283,7 @@
 
                 <div class="aviso-card">
 
-                    <h2>
-                        Nenhum animal encontrado
-                    </h2>
+                    <h2>Nenhum animal encontrado</h2>
 
                     <p>
                         Não encontramos animais perdidos dentro da área correspondente aos filtros selecionados.
@@ -449,11 +301,7 @@
 
     </main>
 
-
-    <!-- =====================================================
-         GALERIA
-    ====================================================== -->
-
+    <!-- GALERIA -->
     <div
         id="galeria-overlay"
         class="galeria-overlay"
@@ -476,7 +324,6 @@
                 ×
             </button>
 
-
             <button
                 type="button"
                 id="galeria-anterior"
@@ -485,7 +332,6 @@
             >
                 ‹
             </button>
-
 
             <div class="galeria-imagem-container">
 
@@ -497,7 +343,6 @@
 
             </div>
 
-
             <button
                 type="button"
                 id="galeria-proxima"
@@ -506,7 +351,6 @@
             >
                 ›
             </button>
-
 
             <div
                 id="galeria-contador"
@@ -519,12 +363,7 @@
 
     </div>
 
-
-    <!-- =====================================================
-         JAVASCRIPT
-         Sem Jinja dentro do JavaScript.
-    ====================================================== -->
-
+    <!-- JAVASCRIPT DA GALERIA -->
     <script>
 
         document.addEventListener("DOMContentLoaded", function () {
@@ -539,7 +378,6 @@
 
             let fotosAtuais = [];
             let indiceAtual = 0;
-
 
             function atualizarGaleria() {
 
@@ -568,7 +406,6 @@
 
             }
 
-
             async function abrirGaleria(idPet) {
 
                 try {
@@ -591,7 +428,6 @@
                         );
                     }
 
-
                     fotosAtuais = dados.fotos.filter(
                         function (foto) {
                             return (
@@ -601,11 +437,9 @@
                         }
                     );
 
-
                     if (!fotosAtuais.length) {
                         return;
                     }
-
 
                     indiceAtual = 0;
 
@@ -626,7 +460,6 @@
 
             }
 
-
             function fecharGaleria() {
 
                 overlay.hidden = true;
@@ -641,7 +474,6 @@
 
             }
 
-
             function fotoAnterior() {
 
                 if (!fotosAtuais.length) {
@@ -651,14 +483,12 @@
                 indiceAtual--;
 
                 if (indiceAtual < 0) {
-                    indiceAtual =
-                        fotosAtuais.length - 1;
+                    indiceAtual = fotosAtuais.length - 1;
                 }
 
                 atualizarGaleria();
 
             }
-
 
             function fotoProxima() {
 
@@ -668,17 +498,13 @@
 
                 indiceAtual++;
 
-                if (
-                    indiceAtual >=
-                    fotosAtuais.length
-                ) {
+                if (indiceAtual >= fotosAtuais.length) {
                     indiceAtual = 0;
                 }
 
                 atualizarGaleria();
 
             }
-
 
             document
                 .querySelectorAll("[data-galeria-id]")
@@ -690,8 +516,7 @@
 
                             evento.preventDefault();
 
-                            const idPet =
-                                elemento.dataset.galeriaId;
+                            const idPet = elemento.dataset.galeriaId;
 
                             if (!idPet) {
                                 return;
@@ -704,38 +529,31 @@
 
                 });
 
-
             botaoFechar.addEventListener(
                 "click",
                 fecharGaleria
             );
-
 
             botaoAnterior.addEventListener(
                 "click",
                 fotoAnterior
             );
 
-
             botaoProxima.addEventListener(
                 "click",
                 fotoProxima
             );
 
-
             overlay.addEventListener(
                 "click",
                 function (evento) {
 
-                    if (
-                        evento.target === overlay
-                    ) {
+                    if (evento.target === overlay) {
                         fecharGaleria();
                     }
 
                 }
             );
-
 
             document.addEventListener(
                 "keydown",
@@ -745,16 +563,13 @@
                         return;
                     }
 
-
                     if (evento.key === "Escape") {
                         fecharGaleria();
                     }
 
-
                     if (evento.key === "ArrowLeft") {
                         fotoAnterior();
                     }
-
 
                     if (evento.key === "ArrowRight") {
                         fotoProxima();
@@ -768,5 +583,4 @@
     </script>
 
 </body>
-
 </html>
